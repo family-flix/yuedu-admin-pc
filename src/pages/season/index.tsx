@@ -320,7 +320,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
   const gotoSeasonArchivePageBtn = new ButtonCore({
     onClick() {
       // app.showView(seasonArchivePage);
-      history.push("root.archive");
     },
   });
   const moveToResourceDriveConfirmDialog = new DialogCore({
