@@ -17,7 +17,7 @@ type SubtitleReaderState = {
 type SubtitleReaderProps = {
   onRead?: () => void;
 };
-export class SubtitleReaderCore extends BaseDomain<TheTypesOfEvents> {
+export class FileReaderCore extends BaseDomain<TheTypesOfEvents> {
   loading = false;
   content: string | null = null;
 
@@ -65,7 +65,7 @@ export class SubtitleReaderCore extends BaseDomain<TheTypesOfEvents> {
   }
 }
 
-export const SubtitlePreview = (props: { store: SubtitleReaderCore }) => {
+export const SubtitlePreview = (props: { store: FileReaderCore }) => {
   const { store } = props;
 
   const [state, setState] = createSignal(store.state);
