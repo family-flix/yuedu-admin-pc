@@ -15,16 +15,6 @@ const configure = {
             pathname: "/home/index",
             children: {},
           },
-          drive_list: {
-            title: "云盘列表",
-            pathname: "/home/drive",
-            children: {},
-          },
-          drive_profile: {
-            title: "云盘详情",
-            pathname: "/home/drive_profile",
-            children: {},
-          },
           season_list: {
             title: "电视剧列表",
             pathname: "/home/season",
@@ -77,11 +67,6 @@ const configure = {
               season: {
                 title: "电视剧解析结果",
                 pathname: "/home/unknown_media/season",
-                children: {},
-              },
-              movie: {
-                title: "电影解析结果",
-                pathname: "/home/unknown_media/movie",
                 children: {},
               },
             },

@@ -530,7 +530,7 @@ export const SyncTaskListPage: ViewComponent = (props) => {
                     {(task) => {
                       const { id, url, resource_file_name, invalid, drive_file_name, season, drive } = task;
                       const name = `${resource_file_name} -> ${drive_file_name}`;
-                      const driveURL = history.buildURLWithPrefix("root.home_layout.drive_profile", { id: drive.id });
+                      // const driveURL = history.buildURLWithPrefix("root.home_layout.drive_profile", { id: drive.id });
                       const seasonURL = season
                         ? history.buildURLWithPrefix("root.home_layout.season_profile", {
                             id: season.tv_id,
@@ -600,9 +600,9 @@ export const SyncTaskListPage: ViewComponent = (props) => {
                                     </div>
                                     <div class="mt-2">{drive_file_name}</div>
                                     <div class="text-slate-500">
-                                      <a href={driveURL} target="_blank">
+                                      {/* <a href={driveURL} target="_blank">
                                         {drive.name}
-                                      </a>
+                                      </a> */}
                                     </div>
                                   </div>
                                 </div>

@@ -5,7 +5,6 @@ import { HomeIndexPage } from "@/pages/home";
 import { HomeSeasonListPage } from "@/pages/season";
 import { HomeSeasonProfilePage } from "@/pages/season/profile";
 import { UnknownMediaLayout } from "@/pages/unknown_media/layout";
-import { UnknownMovieListPage } from "@/pages/unknown_media/movie";
 import { SearchedChapterListPage } from "@/pages/unknown_media/season";
 import { LoginPage } from "@/pages/login";
 import { RegisterPage } from "@/pages/register";
@@ -13,9 +12,7 @@ import { NotFoundPage } from "@/pages/notfound";
 import { LogListPage } from "@/pages/job";
 import { LogProfilePage } from "@/pages/job/profile";
 import { TestPage } from "@/pages/test";
-import { DriveListPage } from "@/pages/drive";
 import { PersonListPage } from "@/pages/person";
-import { DriveProfilePage } from "@/pages/drive/profile";
 import { SharedFilesTransferPage } from "@/pages/resource";
 import { MovieListPage } from "@/pages/movie";
 import { MovieProfilePage } from "@/pages/movie/profile";
@@ -31,8 +28,6 @@ import { SharedFilesHistoryPage } from "@/pages/resource/list";
 import { SharedFilesTransferListPage } from "@/pages/resource/transfer";
 import { InvalidMediaListPage } from "@/pages/media_error";
 import { OuterMediaProfilePage } from "@/pages/outer_profile";
-import { MediaProfileHomeLayout } from "@/pages/media_profile/layout";
-import { SeasonMediaProfileManagePage } from "@/pages/media_profile";
 
 import { ViewComponent } from "@/store/types";
 
@@ -41,8 +36,6 @@ import { PageKeys } from "./routes";
 export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout": HomeLayout,
   "root.home_layout.index": HomeIndexPage,
-  "root.home_layout.drive_list": DriveListPage,
-  "root.home_layout.drive_profile": DriveProfilePage,
   "root.home_layout.season_list": HomeSeasonListPage,
   "root.home_layout.season_profile": HomeSeasonProfilePage,
   "root.home_layout.movie_list": MovieListPage,
@@ -51,7 +44,6 @@ export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout.permission": PersonListPage,
   "root.home_layout.person_list": HomePermissionPage,
   "root.home_layout.parse_result_layout": UnknownMediaLayout,
-  "root.home_layout.parse_result_layout.movie": UnknownMovieListPage,
   "root.home_layout.parse_result_layout.season": SearchedChapterListPage,
   "root.home_layout.member_list": HomeMemberListPage,
   "root.home_layout.resource_sync": SyncTaskListPage,

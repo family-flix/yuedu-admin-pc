@@ -109,7 +109,7 @@ export const SharedFilesTransferPage: ViewComponent = (props) => {
   });
   const transferHistoryBtn = new ButtonCore({
     onClick() {
-      history.push("root.home_layout.transfer_history_list");
+      // history.push("root.home_layout.transfer_history_list");
       // app.showView(sharedFilesTransferListPage);
     },
   });

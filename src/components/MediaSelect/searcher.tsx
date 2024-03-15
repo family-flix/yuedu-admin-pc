@@ -30,7 +30,7 @@ export const MediaSearchView = (props: { store: NovelSearchCore } & JSX.HTMLAttr
   });
 
   const dataSource = () => state().response.dataSource;
-  const cur = () => state().cur;
+  const cur = () => state().curNovel;
 
   return (
     <div>
@@ -63,7 +63,7 @@ export const MediaSearchView = (props: { store: NovelSearchCore } & JSX.HTMLAttr
           <div class="relative">
             <For each={dataSource()}>
               {(media) => {
-                const { name, original_name, overview, poster_path, air_date, episodes } = media;
+                const { name,  } = media;
                 return (
                   <div
                     class={cn("p-2", media.id === cur()?.id ? "bg-slate-300" : "bg-white")}
@@ -71,7 +71,7 @@ export const MediaSearchView = (props: { store: NovelSearchCore } & JSX.HTMLAttr
                       store.toggle(media);
                     }}
                   >
-                    <div class="flex">
+                    {/* <div class="flex">
                       <LazyImage
                         class="w-[120px] rounded-sm object-fit mr-4"
                         store={poster.bind(poster_path)}
@@ -96,7 +96,7 @@ export const MediaSearchView = (props: { store: NovelSearchCore } & JSX.HTMLAttr
                           );
                         }}
                       </For>
-                    </Show>
+                    </Show> */}
                   </div>
                 );
               }}

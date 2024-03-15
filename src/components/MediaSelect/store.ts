@@ -62,25 +62,25 @@ export class MediaSelectCore extends BaseDomain<TheTypesOfEvents> {
     this.dialog = new DialogCore({
       title,
       footer,
-      onOk: () => {
-        if (onOk && this.searcher.state.cur) {
-          onOk(this.searcher.state.cur);
-        }
-      },
+      // onOk: () => {
+      //   if (onOk && this.searcher.state.cur) {
+      //     onOk(this.searcher.state.cur);
+      //   }
+      // },
       onCancel,
     });
     this.searcher = new NovelSearchCore({
-      type,
     });
+    // @ts-ignore
     this.state = {
       value: null,
-      list: this.searcher.$list.response,
+      // list: this.searcher.$list.response,
       showFooter: footer,
     };
     this.okBtn = this.dialog.okBtn;
     this.cancelBtn = this.dialog.cancelBtn;
     this.searcher.$list.onStateChange((nextState) => {
-      this.state.list = nextState;
+      // this.state.list = nextState;
       this.emit(Events.StateChange, { ...this.state });
     });
     this.searcher.onTip((msg) => {

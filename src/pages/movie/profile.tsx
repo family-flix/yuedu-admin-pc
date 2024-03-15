@@ -232,9 +232,7 @@ export const MovieProfilePage: ViewComponent = (props) => {
       });
     },
   });
-  const searcher = new NovelProfileSearchCore({
-    type: MediaTypes.Movie,
-  });
+  const searcher = new NovelProfileSearchCore({});
   const movieProfileChangeDialog = new DialogCore({
     onOk() {
       const id = view.query.id as string;
@@ -247,14 +245,14 @@ export const MovieProfilePage: ViewComponent = (props) => {
         app.tip({ text: ["请选择详情"] });
         return;
       }
-      movieProfileChangeRequest.run({
-        media_id: id,
-        media_profile: {
-          id: String(media.id),
-          type: media.type,
-          name: media.name,
-        },
-      });
+      // movieProfileChangeRequest.run({
+      //   media_id: id,
+      //   media_profile: {
+      //     id: String(media.id),
+      //     type: media.type,
+      //     name: media.name,
+      //   },
+      // });
     },
   });
   const movieProfileChangeBtn = new ButtonCore({
@@ -395,7 +393,7 @@ export const MovieProfilePage: ViewComponent = (props) => {
       </ScrollView>
       <Dialog store={movieProfileChangeDialog}>
         <div class="w-[520px]">
-          <NovelProfileSearchView store={searcher} />
+          {/* <NovelProfileSearchView store={searcher} /> */}
         </div>
       </Dialog>
       <Dialog store={movieDeletingConfirmDialog}>

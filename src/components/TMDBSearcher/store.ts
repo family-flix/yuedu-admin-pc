@@ -54,9 +54,7 @@ export class TMDBSearcherDialogCore extends BaseDomain<TheTypesOfEvents> {
       },
       onCancel,
     });
-    this.tmdb = new NovelProfileSearchCore({
-      type,
-    });
+    this.tmdb = new NovelProfileSearchCore({});
     this.state = {
       value: null,
       list: this.tmdb.$list.response,

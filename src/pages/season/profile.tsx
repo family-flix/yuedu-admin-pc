@@ -166,14 +166,14 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
         return;
       }
       dialog.okBtn.setLoading(true);
-      seasonProfileChangeRequest.run({
-        media_id: id,
-        media_profile: {
-          id: String(media.id),
-          type: media.type,
-          name: media.name,
-        },
-      });
+      // seasonProfileChangeRequest.run({
+      //   media_id: id,
+      //   media_profile: {
+      //     id: String(media.id),
+      //     type: media.type,
+      //     name: media.name,
+      //   },
+      // });
     },
   });
   const profileChangeBtn = new ButtonCore({
@@ -466,7 +466,7 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
       </ScrollView>
       <Dialog title="设置电视详情" store={dialog}>
         <div class="w-[520px]">
-          <NovelProfileSearchView store={searcher} />
+          {/* <NovelProfileSearchView store={searcher} /> */}
         </div>
       </Dialog>
       {/* <Dialog store={profileManualUpdateDialog}>

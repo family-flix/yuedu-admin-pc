@@ -263,7 +263,7 @@ export const HomeIndexPage: ViewComponent = (props) => {
                 <div
                   class="w-[240px] cursor-pointer"
                   onClick={() => {
-                    history.push("root.home_layout.drive_list");
+                    // history.push("root.home_layout.drive_list");
                     // app.showView(homeDriveListPage);
                   }}
                 >

@@ -11,7 +11,7 @@ export function TMDBSearcherDialog(props: { store: TMDBSearcherDialogCore }) {
   return (
     <Dialog store={store.dialog}>
       <div class="w-[520px]">
-        <NovelProfileSearchView store={store.tmdb} />
+        {/* <NovelProfileSearchView store={store.tmdb} /> */}
       </div>
     </Dialog>
   );
