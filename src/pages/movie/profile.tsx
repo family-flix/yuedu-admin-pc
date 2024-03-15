@@ -14,9 +14,9 @@ import {
 import { deleteParsedMediaSource } from "@/services/parsed_media";
 import { upload_subtitle_for_movie } from "@/services";
 import { Button, Dialog, Skeleton, LazyImage, ScrollView, Input } from "@/components/ui";
-import { TMDBSearcherView } from "@/components/TMDBSearcher";
+import { NovelProfileSearchView } from "@/components/TMDBSearcher";
 import { DialogCore, ButtonCore, ScrollViewCore, InputCore, ImageCore } from "@/domains/ui";
-import { TMDBSearcherCore } from "@/domains/tmdb";
+import { NovelProfileSearchCore } from "@/domains/tmdb";
 import { RefCore } from "@/domains/cur";
 import { parseVideoFilename } from "@/components/FilenameParser/services";
 import { RequestCore } from "@/domains/request";
@@ -232,7 +232,7 @@ export const MovieProfilePage: ViewComponent = (props) => {
       });
     },
   });
-  const searcher = new TMDBSearcherCore({
+  const searcher = new NovelProfileSearchCore({
     type: MediaTypes.Movie,
   });
   const movieProfileChangeDialog = new DialogCore({
@@ -395,7 +395,7 @@ export const MovieProfilePage: ViewComponent = (props) => {
       </ScrollView>
       <Dialog store={movieProfileChangeDialog}>
         <div class="w-[520px]">
-          <TMDBSearcherView store={searcher} />
+          <NovelProfileSearchView store={searcher} />
         </div>
       </Dialog>
       <Dialog store={movieDeletingConfirmDialog}>

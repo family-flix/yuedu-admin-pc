@@ -1,12 +1,12 @@
 /**
  * @file
  */
+import { MediaProfileItem } from "@/services/common";
 import { ButtonCore, DialogCore } from "@/domains/ui";
 import { BaseDomain, Handler } from "@/domains/base";
 import { Response } from "@/domains/list/typing";
-import { MediaSearchCore } from "@/domains/media_search";
+import { NovelSearchCore } from "@/domains/media_search";
 import { MediaTypes } from "@/constants";
-import { MediaProfileItem } from "@/services/common";
 
 enum Events {
   Ok,
@@ -36,7 +36,7 @@ type MediaSelectProps = {
 };
 
 export class MediaSelectCore extends BaseDomain<TheTypesOfEvents> {
-  searcher: MediaSearchCore;
+  searcher: NovelSearchCore;
   dialog: DialogCore;
   okBtn: ButtonCore;
   cancelBtn: ButtonCore;
@@ -69,7 +69,7 @@ export class MediaSelectCore extends BaseDomain<TheTypesOfEvents> {
       },
       onCancel,
     });
-    this.searcher = new MediaSearchCore({
+    this.searcher = new NovelSearchCore({
       type,
     });
     this.state = {
@@ -98,7 +98,7 @@ export class MediaSelectCore extends BaseDomain<TheTypesOfEvents> {
     this.searcher.$list.refresh();
   }
   input(name: string) {
-    this.searcher.input.setValue(name);
+    this.searcher.$input.setValue(name);
   }
 
   onOk(handler: Handler<TheTypesOfEvents[Events.Ok]>) {

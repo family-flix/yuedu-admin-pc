@@ -17,39 +17,9 @@ export const UnknownMediaLayout: ViewComponent = (props) => {
   const scrollView = new ScrollViewCore({
     _name: "unknown_media/layout",
   });
-  const tab = new TabHeaderCore({
-    key: "id",
-    options: [
-      {
-        id: "root.home_layout.parse_result_layout.season" as PageKeys,
-        text: "电视剧",
-      },
-      {
-        id: "root.home_layout.parse_result_layout.episode" as PageKeys,
-        text: "剧集",
-      },
-      {
-        id: "root.home_layout.parse_result_layout.movie" as PageKeys,
-        text: "电影",
-      },
-    ],
-    onChange(opt) {
-      history.push(opt.id);
-    },
-    onMounted() {
-      tab.handleChangeById(view.name);
-    },
-  });
 
   // const [curSubView, setCurSubView] = createSignal(view.curView);
   const [subViews, setSubViews] = createSignal(view.subViews);
-
-  history.onRouteChange((v) => {
-    if (!tab.mounted) {
-      return;
-    }
-    tab.handleChangeById(v.name);
-  });
   // view.onCurViewChange((nextCurView) => {
   //   setCurSubView(nextCurView);
   // });
@@ -62,9 +32,7 @@ export const UnknownMediaLayout: ViewComponent = (props) => {
       <div class="relative">
         <div class="p-8 pb-0">
           <h1 class="text-2xl">解析结果</h1>
-          <div class="mt-8">
-            <TabHeader store={tab} />
-          </div>
+          <div class="mt-8"></div>
         </div>
         <div class="flex-1 h-0 rounded-sm">
           <div class="w-full h-full">

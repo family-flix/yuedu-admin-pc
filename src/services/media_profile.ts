@@ -288,50 +288,44 @@ export async function prepareSeasonList(params: { series_id: string }) {
   });
 }
 
-export async function prepareEpisodeList(params: { media_id: string | number }) {
-  const { media_id } = params;
+export async function fetchChaptersOfNovelProfile(params: { novel_id: string | number; keyword: string; }) {
+  const { novel_id, keyword } = params;
   return client.post<
-    ListResponse<{
+    ListResponseWithCursor<{
       id: string | number;
-      type: MediaTypes;
       name: string;
-      original_name: string;
-      poster_path: string;
-      overview: string;
-      air_date: string;
-      order: number;
     }>
-  >(`/api/v2/media_profile/init_season`, {
-    media_id,
+  >(`/api/v1/novel_profile/chapter/list`, {
+    novel_id,
+    name: keyword,
   });
 }
+export type TheNovelChapterProfile = RequestedResource<typeof fetchChaptersOfNovelProfile>["list"][0];
 
 /**
  * 在 TMDB 搜索影视剧
  * @param params
  * @returns
  */
-export async function searchMediaInTMDB(params: Partial<FetchParams> & { keyword: string; type?: MediaTypes }) {
-  const { keyword, page, pageSize, type, ...rest } = params;
+export async function searchNovelProfile(params: Partial<FetchParams> & { keyword: string }) {
+  const { keyword, page, pageSize, ...rest } = params;
   return client.post<
     ListResponse<{
       id: string | number;
-      type: MediaTypes;
       name: string;
-      original_name: string;
-      overview: string;
-      poster_path: string;
-      air_date: string;
+      cover_path: string;
+      author: {
+        name: string;
+      };
     }>
-  >(`/api/v2/media_profile/search_tmdb`, {
+  >("/api/v1/novel_profile/list", {
     ...rest,
-    keyword,
+    name: keyword,
     page,
     page_size: pageSize,
-    type,
   });
 }
-export type TheMediaInTMDB = RequestedResource<typeof searchMediaInTMDB>["list"][0];
+export type TheNovelProfile = RequestedResource<typeof searchNovelProfile>["list"][0];
 
 /** 刷新电视剧详情 */
 export function refreshMediaProfile(body: { media_id: string }) {

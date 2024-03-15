@@ -79,11 +79,6 @@ const configure = {
                 pathname: "/home/unknown_media/season",
                 children: {},
               },
-              episode: {
-                title: "剧集解析结果",
-                pathname: "/home/unknown_media/episode",
-                children: {},
-              },
               movie: {
                 title: "电影解析结果",
                 pathname: "/home/unknown_media/movie",
@@ -116,38 +111,12 @@ const configure = {
             pathname: "/home/report",
             children: {},
           },
-          transfer: {
-            title: "文件转存",
-            pathname: "/home/transfer",
-            children: {},
-          },
-          transfer_search_list: {
-            title: "资源查询历史",
-            pathname: "/home/transfer/search",
-            children: {},
-          },
-          transfer_history_list: {
-            title: "资源转存历史",
-            pathname: "/home/transfer/history",
-            children: {},
-          },
         },
       },
       preview: {
         title: "预览",
         pathname: "/home/preview",
         children: {},
-      },
-      media_profile_layout: {
-        title: "详情管理布局",
-        pathname: "/media_profile",
-        children: {
-          home: {
-            title: "详情管理布局",
-            pathname: "/media_profile/home/index",
-            children: {},
-          },
-        },
       },
       login: {
         title: "管理员登录",

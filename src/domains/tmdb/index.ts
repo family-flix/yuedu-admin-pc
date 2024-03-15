@@ -1,4 +1,4 @@
-import { TheMediaInTMDB, searchMediaInTMDB } from "@/services/media_profile";
+import { TheNovelProfile, searchNovelProfile } from "@/services/media_profile";
 import { BaseDomain, Handler } from "@/domains/base";
 import { ButtonCore, InputCore } from "@/domains/ui";
 import { ListCore } from "@/domains/list";
@@ -12,29 +12,24 @@ enum Events {
   StateChange,
 }
 type TheTypesOfEvents = {
-  [Events.Select]: TheMediaInTMDB;
+  [Events.Select]: TheNovelProfile;
   [Events.StateChange]: TMDBSearcherState;
 };
 interface TMDBSearcherState {
-  response: Response<TheMediaInTMDB>;
-  cur: TheMediaInTMDB | null;
+  response: Response<TheNovelProfile>;
+  cur: TheNovelProfile | null;
   curEpisode: { id: string | number } | null;
 }
-type TMDBSearcherProps = {
-  type?: MediaTypes;
-  episode?: boolean;
-};
+type TMDBSearcherProps = {};
 
-export class TMDBSearcherCore extends BaseDomain<TheTypesOfEvents> {
-  type?: MediaTypes;
-
-  $list = new ListCore(new RequestCore(searchMediaInTMDB));
+export class NovelProfileSearchCore extends BaseDomain<TheTypesOfEvents> {
+  $list = new ListCore(new RequestCore(searchNovelProfile));
   $form: FormCore<{}>;
   $input: InputCore<string>;
   searchBtn: ButtonCore;
   resetBtn: ButtonCore;
 
-  cur: null | TheMediaInTMDB = null;
+  cur: null | TheNovelProfile = null;
   curEpisode: null | { id: string | number } = null;
   needEpisode = false;
   get state(): TMDBSearcherState {
@@ -48,13 +43,7 @@ export class TMDBSearcherCore extends BaseDomain<TheTypesOfEvents> {
   constructor(options: Partial<{ _name: string } & TMDBSearcherProps> = {}) {
     super(options);
 
-    const { type, episode = false } = options;
     // console.log("[DOMAIN]TMDB - constructor ", this.list.response);
-    if (type) {
-      this.type = type;
-    }
-    this.needEpisode = episode;
-    this.$list.setParams({ type: type || MediaTypes.Season });
     this.$form = new FormCore<{}>();
 
     this.searchBtn = new ButtonCore({
@@ -74,7 +63,7 @@ export class TMDBSearcherCore extends BaseDomain<TheTypesOfEvents> {
     });
     this.$input = new InputCore({
       defaultValue: "",
-      placeholder: type === MediaTypes.Movie ? "请输入电影名称" : "请输入电视剧名称",
+      placeholder: "请输入名称",
       onEnter: () => {
         this.searchBtn.click();
       },
@@ -90,7 +79,7 @@ export class TMDBSearcherCore extends BaseDomain<TheTypesOfEvents> {
   search(body: Parameters<typeof this.$list.search>[0]) {
     this.$list.search(body);
   }
-  select(v: TheMediaInTMDB) {
+  select(v: TheNovelProfile) {
     this.cur = v;
     this.emit(Events.StateChange, { ...this.state });
   }
@@ -102,7 +91,7 @@ export class TMDBSearcherCore extends BaseDomain<TheTypesOfEvents> {
     this.cur = null;
     this.emit(Events.StateChange, { ...this.state });
   }
-  toggle(v: TheMediaInTMDB) {
+  toggle(v: TheNovelProfile) {
     if (this.cur === v) {
       this.cur = null;
       this.emit(Events.StateChange, { ...this.state });

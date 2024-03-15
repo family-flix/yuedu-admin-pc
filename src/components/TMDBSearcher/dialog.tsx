@@ -3,7 +3,7 @@ import { Show, createSignal } from "solid-js";
 import { Dialog } from "@/components/ui/dialog";
 
 import { TMDBSearcherDialogCore } from "./store";
-import { TMDBSearcherView } from "./searcher";
+import { NovelProfileSearchView } from "./searcher";
 
 export function TMDBSearcherDialog(props: { store: TMDBSearcherDialogCore }) {
   const { store } = props;
@@ -11,7 +11,7 @@ export function TMDBSearcherDialog(props: { store: TMDBSearcherDialogCore }) {
   return (
     <Dialog store={store.dialog}>
       <div class="w-[520px]">
-        <TMDBSearcherView store={store.tmdb} />
+        <NovelProfileSearchView store={store.tmdb} />
       </div>
     </Dialog>
   );

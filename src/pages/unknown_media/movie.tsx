@@ -8,11 +8,11 @@ import {
   UnknownMovieMediaItem,
   fetchUnknownMediaList,
   setParsedMediaProfile,
-  setParsedSeasonMediaSourceProfile,
+  setSearchedChapterProfile,
 } from "@/services/parsed_media";
 import { ViewComponent } from "@/store/types";
 import { Button, ListView, LazyImage, ScrollView, Input, Dialog, Checkbox } from "@/components/ui";
-import { TMDBSearcherView } from "@/components/TMDBSearcher";
+import { NovelProfileSearchView } from "@/components/TMDBSearcher";
 import {
   ButtonCore,
   ButtonInListCore,
@@ -24,7 +24,7 @@ import {
   ScrollViewCore,
 } from "@/domains/ui";
 import { RequestCore } from "@/domains/request";
-import { TMDBSearcherCore } from "@/domains/tmdb";
+import { NovelProfileSearchCore } from "@/domains/tmdb";
 import { ListCore } from "@/domains/list";
 import { RefCore } from "@/domains/cur";
 import { MediaTypes } from "@/constants";
@@ -59,7 +59,7 @@ export const UnknownMovieListPage: ViewComponent = (props) => {
       });
     },
   });
-  const setMediaSourceProfileRequest = new RequestCore(setParsedSeasonMediaSourceProfile, {
+  const setMediaSourceProfileRequest = new RequestCore(setSearchedChapterProfile, {
     onLoading(loading) {
       dialog2.okBtn.setLoading(loading);
     },
@@ -133,7 +133,7 @@ export const UnknownMovieListPage: ViewComponent = (props) => {
       dialog.show();
     },
   });
-  const searcher = new TMDBSearcherCore({
+  const searcher = new NovelProfileSearchCore({
     type: MediaTypes.Movie,
   });
   const dialog = new DialogCore({
@@ -164,7 +164,7 @@ export const UnknownMovieListPage: ViewComponent = (props) => {
       dialog2.show();
     },
   });
-  const searcher2 = new TMDBSearcherCore({
+  const searcher2 = new NovelProfileSearchCore({
     episode: true,
   });
   const dialog2 = new DialogCore({
@@ -186,8 +186,8 @@ export const UnknownMovieListPage: ViewComponent = (props) => {
           return;
         }
         setMediaSourceProfileRequest.run({
-          parsed_media_source_id: id,
-          media_profile: {
+          searched_chapter_id: id,
+          chapter_profile: {
             id: String(mediaProfile.id),
             type: mediaProfile.type,
             name: mediaProfile.name,
@@ -199,8 +199,8 @@ export const UnknownMovieListPage: ViewComponent = (props) => {
         return;
       }
       setMediaSourceProfileRequest.run({
-        parsed_media_source_id: id,
-        media_profile: {
+        searched_chapter_id: id,
+        chapter_profile: {
           id: String(mediaProfile.id),
           type: mediaProfile.type,
           name: mediaProfile.name,
@@ -342,12 +342,12 @@ export const UnknownMovieListPage: ViewComponent = (props) => {
       </ScrollView>
       <Dialog store={dialog}>
         <div class="w-[520px]">
-          <TMDBSearcherView store={searcher} />
+          <NovelProfileSearchView store={searcher} />
         </div>
       </Dialog>
       <Dialog store={dialog2}>
         <div class="w-[520px]">
-          <TMDBSearcherView store={searcher2} />
+          <NovelProfileSearchView store={searcher2} />
         </div>
       </Dialog>
     </>

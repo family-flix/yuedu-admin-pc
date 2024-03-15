@@ -17,12 +17,12 @@ import { Dialog, DropdownMenu, Input, ScrollView, Skeleton, ListView, Button } f
 import { List } from "@/components/List";
 import { DriveFileCard } from "@/components/DriveFileCard";
 import { EpisodeSelectCore } from "@/components/EpisodeSelect";
-import { TMDBSearcherView } from "@/components/TMDBSearcher";
-import { TMDBSearcherCore } from "@/domains/tmdb";
+import { NovelProfileSearchView } from "@/components/TMDBSearcher";
+import { NovelProfileSearchCore } from "@/domains/tmdb";
 import {
   setParsedMediaProfile,
   setParsedMediaProfileInFileId,
-  setParsedSeasonMediaSourceProfile,
+  setSearchedChapterProfile,
 } from "@/services/parsed_media";
 import { ListCore } from "@/domains/list";
 import {
@@ -472,7 +472,7 @@ export const DriveProfilePage: ViewComponent = (props) => {
       });
     },
   });
-  const mediaSearch = new TMDBSearcherCore({
+  const mediaSearch = new NovelProfileSearchCore({
     // type: MediaTypes.Season,
   });
   const dialog2 = new DialogCore({
@@ -503,7 +503,7 @@ export const DriveProfilePage: ViewComponent = (props) => {
       });
     },
   });
-  const movieSelect = new TMDBSearcherCore({
+  const movieSelect = new NovelProfileSearchCore({
     type: MediaTypes.Movie,
   });
   const fileSearchDialog = new DialogCore({
@@ -981,12 +981,12 @@ export const DriveProfilePage: ViewComponent = (props) => {
       </Dialog>
       <Dialog store={dialog}>
         <div class="w-[520px]">
-          <TMDBSearcherView store={mediaSearch} />
+          <NovelProfileSearchView store={mediaSearch} />
         </div>
       </Dialog>
       <Dialog store={dialog2}>
         <div class="w-[520px]">
-          <TMDBSearcherView store={movieSelect} />
+          <NovelProfileSearchView store={movieSelect} />
         </div>
       </Dialog>
       <Dialog store={fileSearchDialog}>

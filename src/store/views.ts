@@ -6,7 +6,7 @@ import { HomeSeasonListPage } from "@/pages/season";
 import { HomeSeasonProfilePage } from "@/pages/season/profile";
 import { UnknownMediaLayout } from "@/pages/unknown_media/layout";
 import { UnknownMovieListPage } from "@/pages/unknown_media/movie";
-import { UnknownSeasonListPage } from "@/pages/unknown_media/season";
+import { SearchedChapterListPage } from "@/pages/unknown_media/season";
 import { LoginPage } from "@/pages/login";
 import { RegisterPage } from "@/pages/register";
 import { NotFoundPage } from "@/pages/notfound";
@@ -20,7 +20,6 @@ import { SharedFilesTransferPage } from "@/pages/resource";
 import { MovieListPage } from "@/pages/movie";
 import { MovieProfilePage } from "@/pages/movie/profile";
 import { MediaPlayingPage } from "@/pages/play/index";
-import { UnknownEpisodeListPage } from "@/pages/unknown_media/episode";
 import { SyncTaskListPage } from "@/pages/sync_task";
 import { HomeMemberListPage } from "@/pages/member";
 import { VideoParsingPage } from "@/pages/parse";
@@ -53,20 +52,14 @@ export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout.person_list": HomePermissionPage,
   "root.home_layout.parse_result_layout": UnknownMediaLayout,
   "root.home_layout.parse_result_layout.movie": UnknownMovieListPage,
-  "root.home_layout.parse_result_layout.season": UnknownSeasonListPage,
-  "root.home_layout.parse_result_layout.episode": UnknownEpisodeListPage,
+  "root.home_layout.parse_result_layout.season": SearchedChapterListPage,
   "root.home_layout.member_list": HomeMemberListPage,
   "root.home_layout.resource_sync": SyncTaskListPage,
   "root.home_layout.job_list": LogListPage,
   "root.home_layout.job_profile": LogProfilePage,
-  "root.home_layout.transfer": SharedFilesTransferPage,
-  "root.home_layout.transfer_history_list": SharedFilesTransferListPage,
-  "root.home_layout.transfer_search_list": SharedFilesHistoryPage,
   "root.home_layout.report_list": HomeReportListPage,
   "root.home_layout.subtitles_list": HomeSubtitleListPage,
   "root.home_layout.subtitles_create": HomeSubtitleUploadPage,
-  "root.media_profile_layout": MediaProfileHomeLayout,
-  "root.media_profile_layout.home": SeasonMediaProfileManagePage,
   "root.preview": MediaPlayingPage,
   "root.login": LoginPage,
   "root.register": RegisterPage,

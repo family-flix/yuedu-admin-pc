@@ -1,8 +1,8 @@
-import { TheMediaInTMDB } from "@/services/media_profile";
+import { TheNovelProfile } from "@/services/media_profile";
 import { ButtonCore, DialogCore } from "@/domains/ui";
 import { BaseDomain, Handler } from "@/domains/base";
 import { Response } from "@/domains/list/typing";
-import { TMDBSearcherCore } from "@/domains/tmdb";
+import { NovelProfileSearchCore } from "@/domains/tmdb";
 import { MediaTypes } from "@/constants";
 
 enum Events {
@@ -16,8 +16,8 @@ type TheTypesOfEvents = {
   [Events.StateChange]: TMDBSearcherDialogState;
 };
 type TMDBSearcherDialogState = {
-  value: null | TheMediaInTMDB;
-  list: Response<TheMediaInTMDB>;
+  value: null | TheNovelProfile;
+  list: Response<TheNovelProfile>;
   showFooter: boolean;
 };
 type TMDBSearcherDialogProps = {
@@ -29,11 +29,11 @@ type TMDBSearcherDialogProps = {
   /** 是否展示取消按钮 */
   cancelBtn: boolean;
   onCancel: () => void;
-  onOk: (profile: TheMediaInTMDB) => void;
+  onOk: (profile: TheNovelProfile) => void;
 };
 
 export class TMDBSearcherDialogCore extends BaseDomain<TheTypesOfEvents> {
-  tmdb: TMDBSearcherCore;
+  tmdb: NovelProfileSearchCore;
   dialog: DialogCore;
   okBtn: ButtonCore;
   cancelBtn: ButtonCore;
@@ -54,7 +54,7 @@ export class TMDBSearcherDialogCore extends BaseDomain<TheTypesOfEvents> {
       },
       onCancel,
     });
-    this.tmdb = new TMDBSearcherCore({
+    this.tmdb = new NovelProfileSearchCore({
       type,
     });
     this.state = {

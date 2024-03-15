@@ -1,44 +1,20 @@
 /**
- * @file TMDB 搜索器
+ * @file 小说详情搜索器
  */
 import { For, JSX, Show, createSignal } from "solid-js";
-import { Search } from "lucide-solid";
 
-import { Button, Input, LazyImage, Label, ListView, ScrollView } from "@/components/ui";
-import * as Form from "@/components/ui/form";
-import { TabHeader } from "@/components/ui/tab-header";
+import { LazyImage, ListView, ScrollView } from "@/components/ui";
 import { TabHeaderCore } from "@/domains/ui/tab-header";
-import { MediaSearchCore } from "@/domains/media_search";
+import { NovelSearchCore } from "@/domains/media_search";
 import { ScrollViewCore } from "@/domains/ui/scroll-view";
-import { cn } from "@/utils";
 import { ImageInListCore } from "@/domains/ui";
+import { cn } from "@/utils";
 
-export const MediaSearchView = (props: { store: MediaSearchCore } & JSX.HTMLAttributes<HTMLElement>) => {
+export const MediaSearchView = (props: { store: NovelSearchCore } & JSX.HTMLAttributes<HTMLElement>) => {
   const { store } = props;
 
-  const tab = new TabHeaderCore({
-    key: "id",
-    options: [
-      {
-        id: "season",
-        text: "电视剧",
-      },
-      {
-        id: "movie",
-        text: "电影",
-      },
-    ],
-    onChange(value) {
-      store.search({
-        type: value.id as string,
-      });
-    },
-  });
   const poster = new ImageInListCore({});
   const scrollView = new ScrollViewCore({
-    // onScroll(pos) {
-    //   console.log('scroll', pos);
-    // },
     onReachBottom() {
       store.$list.loadMore();
     },

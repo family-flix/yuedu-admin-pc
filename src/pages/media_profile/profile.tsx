@@ -14,7 +14,7 @@ import {
   refreshSeasonProfile,
 } from "@/services";
 import { Button, ContextMenu, ScrollView, Skeleton, Dialog, LazyImage, ListView, Input } from "@/components/ui";
-import { TMDBSearcherDialog, TMDBSearcherView } from "@/components/TMDBSearcher";
+import { TMDBSearcherDialog, NovelProfileSearchView } from "@/components/TMDBSearcher";
 import {
   MenuItemCore,
   ContextMenuCore,
@@ -28,7 +28,7 @@ import {
 import { RequestCore } from "@/domains/request";
 import { RefCore } from "@/domains/cur";
 import { ListCore } from "@/domains/list";
-import { TMDBSearcherCore } from "@/domains/tmdb";
+import { NovelProfileSearchCore } from "@/domains/tmdb";
 import { createJob } from "@/store/job";
 import { appendAction } from "@/store/actions";
 import { ViewComponent } from "@/store/types";
@@ -152,7 +152,7 @@ export const SeasonProfilePage: ViewComponent = (props) => {
   const episodeRef = new RefCore<MediaSourceItem>();
   const fileRef = new RefCore<EpisodeItemInSeason["sources"][number]>();
   // const curParsedTV = new SelectionCore<TVProfile["parsed_tvs"][number]>();
-  const searcher = new TMDBSearcherCore();
+  const searcher = new NovelProfileSearchCore();
   const dialog = new DialogCore({
     onOk() {
       const id = view.query.id as string;
@@ -463,7 +463,7 @@ export const SeasonProfilePage: ViewComponent = (props) => {
       </ScrollView>
       <Dialog title="设置电视详情" store={dialog}>
         <div class="w-[520px]">
-          <TMDBSearcherView store={searcher} />
+          <NovelProfileSearchView store={searcher} />
         </div>
       </Dialog>
       {/* <Dialog store={profileManualUpdateDialog}>

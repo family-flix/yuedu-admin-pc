@@ -14,33 +14,13 @@ export async function fetchUnknownMediaList(params: FetchParams & { type?: Media
     ListResponseWithCursor<{
       id: string;
       name: string;
-      season_text: string;
-      profile: {
-        id: string;
+      overview: string;
+      cover_path: string;
+      source: {
         name: string;
-        poster_path: string;
-      } | null;
-      sources: {
-        id: string;
-        name: string;
-        original_name: string;
-        season_text: string;
-        episode_text: string;
-        file_name: string;
-        parent_paths: string;
-        profile: null | {
-          id: string;
-          name: string;
-          poster_path: string;
-          order: number;
-        };
-        drive: {
-          id: string;
-          name: string;
-        };
-      }[];
+      };
     }>
-  >(`/api/v2/admin/parsed_media/list`, {
+  >(`/api/v1/searched_novel/list`, {
     ...rest,
     type,
     page,
@@ -52,13 +32,13 @@ export async function fetchUnknownMediaList(params: FetchParams & { type?: Media
   return Result.Ok({
     ...r.data,
     list: r.data.list.map((tv) => {
-      const { id, name, season_text, profile, sources } = tv;
+      const { id, name, overview, cover_path, source } = tv;
       return {
         id,
         name,
-        season_text,
-        profile,
-        sources,
+        overview,
+        cover_path,
+        source,
       };
     }),
   });
@@ -123,30 +103,23 @@ export async function fetchUnknownMovieMediaList(params: FetchParams) {
 }
 export type UnknownMovieMediaItem = RequestedResource<typeof fetchUnknownMovieMediaList>["list"][0];
 
-export async function fetchParsedMediaSourceList(params: FetchParams) {
+export async function fetchSearchedChapterList(params: FetchParams & { name: string }) {
   const { page, pageSize, ...rest } = params;
   const r = await client.post<
     ListResponseWithCursor<{
       id: string;
       name: string;
-      season_text: string;
-      episode_text: string;
-      file_name: string;
-      parent_paths: string;
-      profile: {
-        id: string;
+      searched_novel: {
         name: string;
-        poster_path: string;
-        air_date: string;
-      } | null;
-      drive: {
-        id: string;
+        source_name: string;
+      };
+      profile?: {
         name: string;
+        novel_name: string;
       };
     }>
-  >(`/api/v2/admin/parsed_media_source/list`, {
+  >(`/api/v1/searched_chapter/list`, {
     ...rest,
-    type: MediaTypes.Season,
     page,
     page_size: pageSize,
   });
@@ -156,21 +129,16 @@ export async function fetchParsedMediaSourceList(params: FetchParams) {
   return Result.Ok({
     ...r.data,
     list: r.data.list.map((tv) => {
-      const { id, name, season_text, episode_text, file_name, parent_paths, profile, drive } = tv;
+      const { id, name, profile } = tv;
       return {
         id,
         name,
-        season_text,
-        episode_text,
-        file_name,
-        parent_paths,
         profile,
-        drive,
       };
     }),
   });
 }
-export type UnknownEpisodeItem = RequestedResource<typeof fetchParsedMediaSourceList>["list"][0];
+export type UnknownEpisodeItem = RequestedResource<typeof fetchSearchedChapterList>["list"][0];
 
 /** 设置未解析的影视剧详情 */
 export function setParsedMediaProfile(body: {
@@ -197,16 +165,15 @@ export function setParsedMediaProfileInFileId(body: {
 }
 
 /** 设置未解析的影视剧详情 */
-export function setParsedSeasonMediaSourceProfile(body: {
-  parsed_media_source_id: string;
-  media_profile: { id: string; type: MediaTypes; name: string };
-  media_source_profile?: { id: string };
+export function setSearchedChapterProfile(body: {
+  searched_chapter_id: string;
+  novel_profile: { id: string; name: string };
+  chapter_profile: { id: string; name: string };
 }) {
-  const { parsed_media_source_id, media_profile, media_source_profile } = body;
-  return client.post<void>("/api/v2/admin/parsed_media_source/set_profile", {
-    parsed_media_source_id,
-    media_profile,
-    media_source_profile,
+  const { searched_chapter_id, chapter_profile } = body;
+  return client.post<void>("/api/v1/searched_chapter/set_profile", {
+    searched_chapter_id,
+    chapter_profile,
   });
 }
 
