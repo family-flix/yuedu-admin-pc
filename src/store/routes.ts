@@ -64,9 +64,19 @@ const configure = {
             title: "解析结果",
             pathname: "/home/unknown_media",
             children: {
-              season: {
+              novel: {
                 title: "电视剧解析结果",
-                pathname: "/home/unknown_media/season",
+                pathname: "/home/unknown_media/novel",
+                children: {},
+              },
+              novel_profile: {
+                title: "电视剧解析结果",
+                pathname: "/home/unknown_media/novel_profile",
+                children: {},
+              },
+              chapter: {
+                title: "电视剧解析结果",
+                pathname: "/home/unknown_media/chapter",
                 children: {},
               },
             },

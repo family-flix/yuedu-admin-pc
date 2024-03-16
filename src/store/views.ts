@@ -5,7 +5,8 @@ import { HomeIndexPage } from "@/pages/home";
 import { HomeSeasonListPage } from "@/pages/season";
 import { HomeSeasonProfilePage } from "@/pages/season/profile";
 import { UnknownMediaLayout } from "@/pages/unknown_media/layout";
-import { SearchedChapterListPage } from "@/pages/unknown_media/season";
+import { SearchedChapterListPage } from "@/pages/unknown_media/chapter";
+import { SearchedNovelProfilePage } from "@/pages/unknown_media/profile";
 import { LoginPage } from "@/pages/login";
 import { RegisterPage } from "@/pages/register";
 import { NotFoundPage } from "@/pages/notfound";
@@ -32,6 +33,7 @@ import { OuterMediaProfilePage } from "@/pages/outer_profile";
 import { ViewComponent } from "@/store/types";
 
 import { PageKeys } from "./routes";
+import { SearchedNovelListPage } from "@/pages/unknown_media/novel";
 
 export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout": HomeLayout,
@@ -44,7 +46,9 @@ export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout.permission": PersonListPage,
   "root.home_layout.person_list": HomePermissionPage,
   "root.home_layout.parse_result_layout": UnknownMediaLayout,
-  "root.home_layout.parse_result_layout.season": SearchedChapterListPage,
+  "root.home_layout.parse_result_layout.novel": SearchedNovelListPage,
+  "root.home_layout.parse_result_layout.chapter": SearchedChapterListPage,
+  "root.home_layout.parse_result_layout.novel_profile": SearchedNovelProfilePage,
   "root.home_layout.member_list": HomeMemberListPage,
   "root.home_layout.resource_sync": SyncTaskListPage,
   "root.home_layout.job_list": LogListPage,

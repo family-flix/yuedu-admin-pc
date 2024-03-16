@@ -7,22 +7,26 @@ import { MediaErrorTypes, MediaTypes } from "@/constants";
 /**
  * 获取无法识别的 tv
  */
-export async function fetchUnknownMediaList(params: FetchParams & { type?: MediaTypes }) {
-  const { page, pageSize, type, ...rest } = params;
-  console.log("[SERVICES]fetchUnknownMediaList", type);
+export async function fetchSearchedNovelList(params: FetchParams & { keyword: string }) {
+  const { page, pageSize, keyword, ...rest } = params;
+  console.log("[SERVICES]fetchUnknownMediaList");
   const r = await client.post<
     ListResponseWithCursor<{
       id: string;
       name: string;
-      overview: string;
-      cover_path: string;
+      url: string;
+      profile: {
+        name: string;
+        overview: string;
+        cover_path: string;
+      };
       source: {
         name: string;
       };
     }>
   >(`/api/v1/searched_novel/list`, {
     ...rest,
-    type,
+    name: keyword,
     page,
     page_size: pageSize,
   });
@@ -32,18 +36,70 @@ export async function fetchUnknownMediaList(params: FetchParams & { type?: Media
   return Result.Ok({
     ...r.data,
     list: r.data.list.map((tv) => {
-      const { id, name, overview, cover_path, source } = tv;
+      const { id, name, profile, source } = tv;
       return {
         id,
         name,
-        overview,
-        cover_path,
+        profile,
         source,
       };
     }),
   });
 }
-export type UnknownSeasonMediaItem = RequestedResource<typeof fetchUnknownMediaList>["list"][0];
+export type SearchedNovelItem = RequestedResource<typeof fetchSearchedNovelList>["list"][0];
+
+export async function fetchSearchedNovelProfile(value: { id: string }) {
+  const { id } = value;
+  const r = await client.post<{
+    id: string;
+    name: string;
+    profile: {
+      name: string;
+      overview: string;
+      cover_path: string;
+    };
+    source: {
+      name: string;
+    };
+    chapter: {
+      list: {
+        id: string;
+        name: string;
+        url: string;
+        profile: {
+          name: string;
+          novel_name: string;
+        };
+      }[];
+      next_marker: string;
+    };
+  }>(`/api/v1/searched_novel/profile`, {
+    searched_novel_id: id,
+  });
+  if (r.error) {
+    return Result.Err(r.error.message);
+  }
+  const data = r.data;
+  return Result.Ok({
+    ...data,
+    chapter: {
+      ...data.chapter,
+      list: data.chapter.list.map((chapter) => {
+        const { id, name, profile } = chapter;
+        return {
+          id,
+          name,
+          searched_novel: {
+            name: data.name,
+            source_name: data.source.name,
+          },
+          profile,
+        };
+      }),
+    },
+  });
+}
+
 /**
  * 获取无法识别的 tv
  */
@@ -103,8 +159,8 @@ export async function fetchUnknownMovieMediaList(params: FetchParams) {
 }
 export type UnknownMovieMediaItem = RequestedResource<typeof fetchUnknownMovieMediaList>["list"][0];
 
-export async function fetchSearchedChapterList(params: FetchParams & { name: string }) {
-  const { page, pageSize, ...rest } = params;
+export async function fetchSearchedChapterList(params: FetchParams & { novel_id: string; name: string }) {
+  const { novel_id, name, page, pageSize, ...rest } = params;
   const r = await client.post<
     ListResponseWithCursor<{
       id: string;
@@ -120,6 +176,8 @@ export async function fetchSearchedChapterList(params: FetchParams & { name: str
     }>
   >(`/api/v1/searched_chapter/list`, {
     ...rest,
+    searched_novel_id: novel_id,
+    name,
     page,
     page_size: pageSize,
   });
@@ -129,10 +187,11 @@ export async function fetchSearchedChapterList(params: FetchParams & { name: str
   return Result.Ok({
     ...r.data,
     list: r.data.list.map((tv) => {
-      const { id, name, profile } = tv;
+      const { id, name, searched_novel, profile } = tv;
       return {
         id,
         name,
+        searched_novel,
         profile,
       };
     }),

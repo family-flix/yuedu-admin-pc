@@ -229,33 +229,41 @@ export const HomeLayout: ViewComponent = (props) => {
     app.tip(msg);
   });
 
-  const [menus, setMenus] = createSignal([
+  const [menus, setMenus] = createSignal<
+    {
+      text: string;
+      icon: JSX.Element;
+      url?: PageKeys;
+      badge?: boolean;
+      onClick?: () => void;
+    }[]
+  >([
     {
       text: "首页",
       icon: <Home class="w-6 h-6" />,
       // url: "/home/index",
-      url: "root.home_layout.index" as PageKeys,
+      url: "root.home_layout.index",
       // view: homeIndexPage,
     },
     {
       text: "电视剧",
       icon: <Tv class="w-6 h-6" />,
       // url: "/home/season",
-      url: "root.home_layout.season_list" as PageKeys,
+      url: "root.home_layout.season_list",
       // view: homeSeasonListPage,
     },
     {
       text: "电影",
       icon: <Film class="w-6 h-6" />,
       // url: "/home/movie",
-      url: "root.home_layout.movie_list" as PageKeys,
+      url: "root.home_layout.movie_list",
       // view: homeMovieListPage,
     },
     {
       text: "刮削结果",
       icon: <Sparkles class="w-6 h-6" />,
       // url: "/home/unknown_media/season",
-      url: "root.home_layout.parse_result_layout.season" as PageKeys,
+      url: "root.home_layout.parse_result_layout.novel",
       // view: homeUnknownTVPage,
     },
     {
@@ -263,28 +271,21 @@ export const HomeLayout: ViewComponent = (props) => {
       icon: <HeartCrack class="w-6 h-6" />,
       badge: false,
       // url: "/home/invalid_media",
-      url: "root.home_layout.invalid_media_list" as PageKeys,
+      url: "root.home_layout.invalid_media_list",
       // view: homeInvalidMediaListPage,
-    },
-    {
-      text: "集合管理",
-      icon: <Folder class="w-6 h-6" />,
-      // url: "/home/collection",
-      url: "root.home_layout.collection_list" as PageKeys,
-      // view: collectionListPage,
     },
     {
       text: "字幕管理",
       icon: <Subtitles class="w-6 h-6" />,
       // url: "/home/subtitle",
-      url: "root.home_layout.subtitles_list" as PageKeys,
+      url: "root.home_layout.subtitles_list",
       // view: homeSubtitleListPage,
     },
     {
       text: "同步任务",
       icon: <AlarmClock class="w-6 h-6" />,
       // view: syncTaskListPage,
-      url: "root.home_layout.resource_sync" as PageKeys,
+      url: "root.home_layout.resource_sync",
     },
     {
       text: "任务",
@@ -292,7 +293,7 @@ export const HomeLayout: ViewComponent = (props) => {
       badge: false,
       // url: "/home/log",
       // view: homeTaskListPage,
-      url: "root.home_layout.job_list" as PageKeys,
+      url: "root.home_layout.job_list",
     },
     {
       text: "问题反馈",
@@ -300,7 +301,7 @@ export const HomeLayout: ViewComponent = (props) => {
       badge: false,
       // url: "/home/report",
       // view: homeReportListPage,
-      url: "root.home_layout.report_list" as PageKeys,
+      url: "root.home_layout.report_list",
     },
     {
       text: "云盘文件搜索",
