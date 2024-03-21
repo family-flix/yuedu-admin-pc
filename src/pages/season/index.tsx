@@ -98,7 +98,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
     },
   });
   const partialSeasonRequest = new RequestCore(fetchPartialSeasonMedia);
-
   const transferRequest = new RequestCore(transferMediaToAnotherDrive, {
     onLoading(loading) {
       transferConfirmDialog.okBtn.setLoading(loading);
@@ -317,11 +316,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
   //     app.showView(homeInvalidTVListPage);
   //   },
   // });
-  const gotoSeasonArchivePageBtn = new ButtonCore({
-    onClick() {
-      // app.showView(seasonArchivePage);
-    },
-  });
   const moveToResourceDriveConfirmDialog = new DialogCore({
     title: "移动到资源盘",
     onOk() {
@@ -442,10 +436,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                   </Show>
                 </div>
               </PurePopover>
-              {/* <Button icon={<ArrowUpCircle class="w-4 h-4" />} store={refreshSeasonListBtn}>
-                更新近3月内电视剧详情
-              </Button> */}
-              <Button store={gotoSeasonArchivePageBtn}>归档电视剧</Button>
             </div>
             <div class="flex items-center space-x-2 mt-4">
               <Input class="" store={nameSearchInput} />
@@ -491,7 +481,7 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                         id,
                         name,
                         overview,
-                        poster_path,
+                        cover_path: poster_path,
                         air_date,
                         vote_average,
                         cur_episode_count,

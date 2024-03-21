@@ -4,7 +4,7 @@
 import { For, Show, createSignal } from "solid-js";
 import { Calendar, Send, Smile } from "lucide-solid";
 
-import { SeasonMediaItem, fetchSeasonMediaList } from "@/services/media";
+import { SearchedChapterItem, fetchSearchedChapterList } from "@/services/parsed_media";
 import { BaseDomain, Handler } from "@/domains/base";
 import { ButtonCore, DialogCore, DialogProps, ImageInListCore, InputCore, ScrollViewCore } from "@/domains/ui";
 import { RefCore } from "@/domains/cur";
@@ -20,16 +20,15 @@ enum Events {
   Clear,
 }
 type TheTypesOfEvents = {
-  //   [Events.Change]: SeasonMediaItem;
-  [Events.Select]: SeasonMediaItem;
+  [Events.Select]: SearchedChapterItem;
   [Events.Clear]: void;
 };
 type TVSeasonSelectProps = {
-  onSelect?: (v: SeasonMediaItem) => void;
+  onSelect?: (v: SearchedChapterItem) => void;
 } & DialogProps;
 
-export class TVSeasonSelectCore extends BaseDomain<TheTypesOfEvents> {
-  curSeason = new RefCore<SeasonMediaItem>();
+export class SearchedChapterSelectCore extends BaseDomain<TheTypesOfEvents> {
+  curSeason = new RefCore<SearchedChapterItem>();
   /** 名称搜索输入框 */
   nameInput = new InputCore({
     defaultValue: "",
@@ -50,7 +49,7 @@ export class TVSeasonSelectCore extends BaseDomain<TheTypesOfEvents> {
   /** 弹窗取消按钮 */
   cancelBtn: ButtonCore;
   /** 季列表 */
-  list = new ListCore(new RequestCore(fetchSeasonMediaList), {
+  list = new ListCore(new RequestCore(fetchSearchedChapterList), {
     onLoadingChange: (loading) => {
       this.searchBtn.setLoading(loading);
     },
@@ -93,7 +92,7 @@ export class TVSeasonSelectCore extends BaseDomain<TheTypesOfEvents> {
   clear() {
     this.curSeason.clear();
   }
-  select(season: SeasonMediaItem) {
+  select(season: SearchedChapterItem) {
     //     console.log("[COMPONENT]TVSeasonSelect - select", season);
     this.curSeason.select(season);
     this.emit(Events.Select, season);
@@ -113,7 +112,7 @@ export class TVSeasonSelectCore extends BaseDomain<TheTypesOfEvents> {
   }
 }
 
-export const SeasonSelect = (props: { store: TVSeasonSelectCore }) => {
+export const SearchedChapterSelect = (props: { store: SearchedChapterSelectCore }) => {
   const { store } = props;
 
   const [tvListResponse, setTVListResponse] = createSignal(store.response);
@@ -169,7 +168,7 @@ export const SeasonSelect = (props: { store: TVSeasonSelectCore }) => {
           <div class="space-y-4">
             <For each={tvListResponse().dataSource}>
               {(season) => {
-                const { id, name, overview, cur_episode_count, episode_count, air_date, cover_path: poster_path } = season;
+                const { id, name, searched_novel } = season;
                 return (
                   <div
                     classList={{
@@ -182,37 +181,11 @@ export const SeasonSelect = (props: { store: TVSeasonSelectCore }) => {
                     }}
                   >
                     <div class="flex">
-                      <div class="overflow-hidden mr-2 rounded-sm">
-                        <LazyImage class="w-[120px] h-[180px]" store={poster.bind(poster_path)} alt={name} />
-                      </div>
                       <div class="flex-1 w-0 p-4">
-                        <div class="flex items-center">
-                          <h2 class="text-2xl text-slate-800">{name}</h2>
-                        </div>
-                        <div class="mt-2 overflow-hidden text-ellipsis">
-                          <p class="text-slate-700 break-all whitespace-pre-wrap truncate line-clamp-3">{overview}</p>
-                        </div>
-                        <div class="flex items-center space-x-4 mt-2 break-keep overflow-hidden">
-                          <div class="flex items-center space-x-1 px-2 border border-slate-600 rounded-xl text-slate-600">
-                            <Calendar class="w-4 h-4 text-slate-800" />
-                            <div class="break-keep whitespace-nowrap">{air_date}</div>
-                          </div>
-                          <Show
-                            when={cur_episode_count !== episode_count}
-                            fallback={
-                              <div class="flex items-center space-x-1 px-2 border border-green-600 rounded-xl text-green-600">
-                                <Smile class="w-4 h-4" />
-                                <div>全{episode_count}集</div>
-                              </div>
-                            }
-                          >
-                            <div class="flex items-center space-x-1 px-2 border border-blue-600 rounded-xl text-blue-600">
-                              <Send class="w-4 h-4" />
-                              <div>
-                                {cur_episode_count}/{episode_count}
-                              </div>
-                            </div>
-                          </Show>
+                        <div class="">
+                          <div class="text-xl text-slate-800">{searched_novel.name}</div>
+                          <div class="mt-2">{name}</div>
+                          <div class="mt-2 text-sm">{searched_novel.source_name}</div>
                         </div>
                       </div>
                     </div>

@@ -6,7 +6,7 @@ import { AlertCircle, ArrowLeft, CheckCircle, Edit, Play, Trash } from "lucide-s
 
 import { MediaSourceItem } from "@/services/media";
 import {
-  UnknownEpisodeItem,
+  SearchedChapterItem,
   deleteParsedMediaSource,
   fetchSearchedChapterList,
   fetchSearchedNovelProfile,
@@ -111,11 +111,12 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
     },
   });
   const chapterList = new ListCore(new RequestCore(fetchSearchedChapterList), {
+    pageSize: 100,
     search: {
       novel_id: view.query.id,
     },
   });
-  const curEpisode = new RefCore<UnknownEpisodeItem>();
+  const curEpisode = new RefCore<SearchedChapterItem>();
   const mediaSearch = new NovelSearchCore();
   const setChapterProfileDialog = new DialogCore({
     onOk() {

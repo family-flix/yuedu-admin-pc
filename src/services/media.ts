@@ -19,18 +19,19 @@ export async function fetchSeasonMediaList(params: FetchParams & Partial<{ name:
     ListResponseWithCursor<{
       id: string;
       name: string;
-      original_name: string;
       overview: string;
-      poster_path: string;
+      cover_path: string;
       air_date: string;
       vote_average: string;
       episode_count: number;
       cur_episode_count: number;
-      origin_country: string[];
-      genres: { value: string; label: string }[];
+      author: {
+        name: string;
+      };
+      // genres: { value: string; label: string }[];
       tips: string[];
     }>
-  >("/api/v2/admin/season/list", {
+  >("/api/v1/novel_profile/list", {
     ...rest,
     page,
     page_size: pageSize,
@@ -44,12 +45,45 @@ export async function fetchSeasonMediaList(params: FetchParams & Partial<{ name:
       const { ...rest } = tv;
       return {
         ...rest,
-        // updated: dayjs(updated).format("YYYY/MM/DD HH:mm"),
       };
     }),
   });
 }
 export type SeasonMediaItem = RequestedResource<typeof fetchSeasonMediaList>["list"][number];
+
+/** 获取季列表 */
+export async function fetchNovelChapterProfileList(params: FetchParams & Partial<{ name: string }>) {
+  const { page, pageSize, ...rest } = params;
+  const r = await client.post<
+    ListResponseWithCursor<{
+      id: string;
+      name: string;
+      file_count: number;
+      novel: {
+        name: string;
+        cover_path: string;
+      };
+    }>
+  >("/api/v1/novel_profile/chapter/list", {
+    ...rest,
+    invalid: 1,
+    page,
+    page_size: pageSize,
+  });
+  if (r.error) {
+    return Result.Err(r.error.message);
+  }
+  return Result.Ok({
+    ...r.data,
+    list: r.data.list.map((tv) => {
+      const { ...rest } = tv;
+      return {
+        ...rest,
+      };
+    }),
+  });
+}
+export type NovelChapterProfileItem = RequestedResource<typeof fetchNovelChapterProfileList>["list"][number];
 
 export async function fetchSeasonMediaProfile(body: { season_id: string }) {
   const { season_id } = body;
@@ -226,17 +260,18 @@ export async function fetchPartialSeasonMedia(params: { media_id: string }) {
   const r = await client.post<{
     id: string;
     name: string;
-    original_name: string;
     overview: string;
-    poster_path: string;
+    cover_path: string;
     air_date: string;
     vote_average: string;
     episode_count: number;
     cur_episode_count: number;
-    origin_country: string[];
+    author: {
+      name: string;
+    };
     genres: { value: string; label: string }[];
     tips: string[];
-  }>(`/api/v2/admin/season/partial`, {
+  }>(`/api/v1/novel_profile/partial`, {
     media_id,
   });
   if (r.error) {
@@ -422,4 +457,8 @@ export function transferMediaToResourceDrive(body: { media_id: string }) {
   return client.post<{ job_id: string }>("/api/v2/admin/media/to_resource_drive", {
     media_id,
   });
+}
+
+export function setSearchedChapterToChapterProfile(value: { searched_chapter_id: string; chapter_id: string }) {
+  return client.post("/api/v1/novel_profile/chapter/set_profile", value);
 }

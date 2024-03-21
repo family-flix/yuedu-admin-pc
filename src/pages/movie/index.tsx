@@ -4,7 +4,13 @@
 import { createSignal, For, Show } from "solid-js";
 import { Award, BookOpen, Calendar, Clock, Info, LocateIcon, MapPin, RotateCw, Search, Star } from "lucide-solid";
 
-import { MovieMediaItem, fetchMovieMediaList, transferMediaToAnotherDrive } from "@/services/media";
+import {
+  MovieMediaItem,
+  transferMediaToAnotherDrive,
+  fetchNovelChapterProfileList,
+  NovelChapterProfileItem,
+  setSearchedChapterToChapterProfile,
+} from "@/services/media";
 import { moveMovieToResourceDrive, refreshMovieProfiles, transferMovieToAnotherDrive } from "@/services";
 import { LazyImage, Input, Button, Skeleton, ScrollView, ListView, Dialog } from "@/components/ui";
 import {
@@ -25,6 +31,7 @@ import { ViewComponent } from "@/store/types";
 import { consumeAction, pendingActions } from "@/store/actions";
 import { createJob } from "@/store/job";
 import { driveList } from "@/store/drives";
+import { SearchedChapterSelect, SearchedChapterSelectCore } from "@/components/searched-chapter-select";
 
 export const MovieListPage: ViewComponent = (props) => {
   const { app, history, view } = props;
@@ -81,7 +88,8 @@ export const MovieListPage: ViewComponent = (props) => {
       });
     },
   });
-  const movieList = new ListCore(new RequestCore(fetchMovieMediaList), {
+  const searchedChapterSetRequest = new RequestCore(setSearchedChapterToChapterProfile);
+  const movieList = new ListCore(new RequestCore(fetchNovelChapterProfileList), {
     onLoadingChange(loading) {
       searchBtn.setLoading(loading);
       resetBtn.setLoading(loading);
@@ -113,7 +121,7 @@ export const MovieListPage: ViewComponent = (props) => {
       refreshMovieProfilesRequest.run();
     },
   });
-  const movieRef = new RefCore<MovieMediaItem>();
+  const movieRef = new RefCore<NovelChapterProfileItem>();
   const driveRef = new RefCore<DriveCore>({
     onChange(v) {
       setCurDrive(v);
@@ -135,6 +143,41 @@ export const MovieListPage: ViewComponent = (props) => {
     onClick() {
       movieList.reset();
       nameSearchInput.clear();
+    },
+  });
+  const searchedChapterSelect = new SearchedChapterSelectCore({});
+  const searchedChapterSelectDialog = new DialogCore({
+    async onOk() {
+      const searchedChapter = searchedChapterSelect.value;
+      if (!searchedChapter) {
+        app.tip({
+          text: ["请先选择关联的章节"],
+        });
+        return;
+      }
+      const chapter = movieRef.value;
+      if (!chapter) {
+        app.tip({
+          text: ["请先要关联的章节"],
+        });
+        return;
+      }
+      searchedChapterSelectDialog.okBtn.setLoading(true);
+      const r = await searchedChapterSetRequest.run({
+        searched_chapter_id: searchedChapter.id,
+        chapter_id: chapter.id,
+      });
+      searchedChapterSelectDialog.okBtn.setLoading(false);
+      if (r.error) {
+        app.tip({
+          text: ["设置失败", r.error.message],
+        });
+        return;
+      }
+      searchedChapterSelectDialog.hide();
+      app.tip({
+        text: ["设置成功"],
+      });
     },
   });
   const tipPopover = new PopoverCore({
@@ -172,13 +215,13 @@ export const MovieListPage: ViewComponent = (props) => {
       transferConfirmDialog.hide();
     },
   });
-  const transferBtn = new ButtonInListCore<MovieMediaItem>({
+  const setSearchedChapterBtn = new ButtonInListCore<NovelChapterProfileItem>({
     onClick(record) {
       if (record === null) {
         return;
       }
       movieRef.select(record);
-      transferConfirmDialog.show();
+      searchedChapterSelectDialog.show();
     },
   });
   const avatar = new ImageInListCore({});
@@ -201,15 +244,6 @@ export const MovieListPage: ViewComponent = (props) => {
     onCancel() {
       driveRef.clear();
       transferConfirmDialog.hide();
-    },
-  });
-  const moveToResourceDriveBtn = new ButtonInListCore<MovieMediaItem>({
-    onClick(record) {
-      if (record === null) {
-        return;
-      }
-      movieRef.select(record);
-      moveToResourceDriveConfirmDialog.show();
     },
   });
   const refreshBtn = new ButtonCore({
@@ -328,97 +362,25 @@ export const MovieListPage: ViewComponent = (props) => {
               <div class="space-y-4">
                 <For each={state().dataSource}>
                   {(movie) => {
-                    const { id, name, overview, poster_path, air_date, vote_average, origin_country, tips, persons } =
-                      movie;
+                    const { id, name, novel, file_count } = movie;
                     const url = history.buildURLWithPrefix("root.home_layout.movie_profile", { id });
                     return (
                       <div class="rounded-md border border-slate-300 bg-white shadow-sm">
                         <div class="flex">
                           <div class="overflow-hidden mr-2 rounded-sm">
-                            <LazyImage class="w-[180px] h-[272px]" store={poster.bind(poster_path)} alt={name} />
+                            <LazyImage class="w-[86px] h-[115px]" store={poster.bind(novel.cover_path)} alt={name} />
                           </div>
                           <div class="flex-1 w-0 p-4">
                             <h2 class="text-2xl text-slate-800">
                               <a href={url} target="_blank">
-                                {name}
+                                {novel.name}
                               </a>
                             </h2>
-                            <div class="mt-2 overflow-hidden text-ellipsis">
-                              <p class="text-slate-700 break-all whitespace-pre-wrap truncate line-clamp-4">
-                                {overview}
-                              </p>
-                            </div>
-                            <div class="flex items-center space-x-4 mt-2">
-                              <div class="flex items-center space-x-1 px-2 border border-slate-600 rounded-xl text-slate-600">
-                                <Calendar class="w-4 h-4 text-slate-800" />
-                                <div class="break-keep whitespace-nowrap">{air_date}</div>
-                              </div>
-                              <Show when={origin_country}>
-                                <div class="flex items-center space-x-1 px-2 border border-blue-600 rounded-xl text-blue-600">
-                                  <MapPin class="w-4 h-4 text-blue-600" />
-                                  <div class="break-keep whitespace-nowrap">{origin_country}</div>
-                                </div>
-                              </Show>
-                              <div class="flex items-center space-x-1 px-2 border border-green-600 rounded-xl text-green-600">
-                                <Star class="w-4 h-4" />
-                                <div>{vote_average}</div>
-                              </div>
-                              <Show when={tips.length}>
-                                <div
-                                  class="flex items-center space-x-1 px-2 border border-red-500 rounded-xl text-red-500"
-                                  onMouseEnter={(event) => {
-                                    const { x, y, width, height, left, top, right, bottom } =
-                                      event.currentTarget.getBoundingClientRect();
-                                    setTips(tips);
-                                    tipPopover.show({ x, y, width, height: height + 8, left, top, right, bottom });
-                                  }}
-                                  onMouseLeave={() => {
-                                    tipPopover.hide();
-                                  }}
-                                >
-                                  <Info class="w-4 h-4" />
-                                  <div>{tips.length}个问题</div>
-                                </div>
-                              </Show>
-                            </div>
-                            <div class="flex flex-wrap gap-4 mt-4">
-                              <For each={persons}>
-                                {(person) => {
-                                  return (
-                                    <div class="flex flex-col items-center w-[80px]">
-                                      <LazyImage
-                                        class="w-8 h-8 rounded-full"
-                                        store={avatar.bind(person.profile_path)}
-                                      />
-                                      <div class="mt-2 text-center">{person.name}</div>
-                                    </div>
-                                  );
-                                }}
-                              </For>
-                            </div>
-                            <div class="space-x-2 mt-6">
-                              <Button
-                                store={profileBtn.bind(movie)}
-                                variant="subtle"
-                                icon={<BookOpen class="w-4 h-4" />}
-                              >
-                                详情
-                              </Button>
-                              <Button
-                                store={transferBtn.bind(movie)}
-                                variant="subtle"
-                                icon={<BookOpen class="w-4 h-4" />}
-                              >
-                                归档
-                              </Button>
-                              <Button
-                                store={moveToResourceDriveBtn.bind(movie)}
-                                variant="subtle"
-                                icon={<BookOpen class="w-4 h-4" />}
-                              >
-                                移动到资源盘
-                              </Button>
-                            </div>
+                            <div class="flex items-center space-x-4 mt-2">{name}</div>
+                            <div class="space-x-2 mt-6">{file_count}</div>
+                            <Button variant="subtle" store={setSearchedChapterBtn.bind(movie)}>
+                              关联详情
+                            </Button>
                           </div>
                         </div>
                       </div>
@@ -430,42 +392,9 @@ export const MovieListPage: ViewComponent = (props) => {
           </div>
         </div>
       </ScrollView>
-      <Dialog store={transferConfirmDialog}>
+      <Dialog store={searchedChapterSelectDialog}>
         <div class="w-[520px]">
-          <div class="mt-2 space-y-4 h-[320px] overflow-y-auto">
-            <For each={driveResponse().dataSource}>
-              {(drive) => {
-                const { id, name, state } = drive;
-                return (
-                  <div
-                    classList={{
-                      "bg-gray-100 border rounded-sm p-2 cursor-pointer hover:bg-gray-200": true,
-                      "border-green-500": curDrive()?.id === id,
-                    }}
-                    onClick={() => {
-                      driveRef.select(drive);
-                    }}
-                  >
-                    <div
-                      classList={{
-                        "py-2": true,
-                      }}
-                    >
-                      <div class="text-xl">{name}</div>
-                    </div>
-                    <div class="text-slate-500 text-sm">
-                      {state.used_size}/{state.total_size}
-                    </div>
-                  </div>
-                );
-              }}
-            </For>
-          </div>
-        </div>
-      </Dialog>
-      <Dialog store={moveToResourceDriveConfirmDialog}>
-        <div class="w-[520px]">
-          <div>将电影移动到资源盘后才能公开分享</div>
+          <SearchedChapterSelect store={searchedChapterSelect} />
         </div>
       </Dialog>
     </>

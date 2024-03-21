@@ -4,7 +4,7 @@
 import { For, Show, createSignal } from "solid-js";
 import { AlertCircle, Brush, Check, CheckCircle, Edit, RotateCcw, Search, Trash } from "lucide-solid";
 
-import { UnknownEpisodeItem, fetchSearchedChapterList, setSearchedChapterProfile } from "@/services/parsed_media";
+import { SearchedChapterItem, fetchSearchedChapterList, setSearchedChapterProfile } from "@/services/parsed_media";
 import { delete_unknown_episode } from "@/services";
 import { ViewComponent } from "@/store/types";
 import { Button, Dialog, Input, LazyImage, ListView, ScrollView } from "@/components/ui";
@@ -56,9 +56,9 @@ export const SearchedChapterListPage: ViewComponent = (props) => {
       });
     },
   });
-  const curEpisode = new RefCore<UnknownEpisodeItem>();
-  const mediaSourceRef = new RefCore<UnknownEpisodeItem>();
-  const selectMatchedProfileBtn = new ButtonInListCore<UnknownEpisodeItem>({
+  const curEpisode = new RefCore<SearchedChapterItem>();
+  const mediaSourceRef = new RefCore<SearchedChapterItem>();
+  const selectMatchedProfileBtn = new ButtonInListCore<SearchedChapterItem>({
     onClick(record) {
       curEpisode.select(record);
       setChapterProfileDialog.show();
@@ -78,7 +78,7 @@ export const SearchedChapterListPage: ViewComponent = (props) => {
       deleteUnknownEpisode.run({ id: curEpisode.value.id });
     },
   });
-  const deleteBtn = new ButtonInListCore<UnknownEpisodeItem>({
+  const deleteBtn = new ButtonInListCore<SearchedChapterItem>({
     onClick(record) {
       curEpisode.select(record);
       deleteConfirmDialog.setTitle(`确认删除 ${record.name} 吗？`);

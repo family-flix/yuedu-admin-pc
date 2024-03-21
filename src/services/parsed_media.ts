@@ -197,7 +197,7 @@ export async function fetchSearchedChapterList(params: FetchParams & { novel_id:
     }),
   });
 }
-export type UnknownEpisodeItem = RequestedResource<typeof fetchSearchedChapterList>["list"][0];
+export type SearchedChapterItem = RequestedResource<typeof fetchSearchedChapterList>["list"][0];
 
 /** 设置未解析的影视剧详情 */
 export function setParsedMediaProfile(body: {
