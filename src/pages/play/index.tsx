@@ -9,12 +9,15 @@ import { Video } from "@/components/ui";
 import { RequestCore } from "@/domains/request";
 import { PlayerCore } from "@/domains/player";
 import { ViewComponent } from "@/store/types";
+import { RequestCoreV2 } from "@/domains/request/v2";
 
 export const MediaPlayingPage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
   const player = new PlayerCore({ app });
-  const fileRequest = new RequestCore(fetchSourcePreviewInfo, {
+  const fileRequest = new RequestCoreV2({
+    fetch: fetchSourcePreviewInfo,
+    client,
     onSuccess(v) {
       setProfile(v);
       player.setSize({
@@ -108,7 +111,7 @@ export const MediaPlayingPage: ViewComponent = (props) => {
   // console.log("[PAGE]tv/play - before fetch tv profile", view.query.id);
   onMount(() => {
     console.log("[PAGE]play/index - onMount", view.query.id);
-    fileRequest.run({ id: view.query.id });
+    fileRequest.run({ searched_chapter_id: view.query.id });
   });
   onCleanup(() => {
     console.log("[PAGE]play/index - onCleanup", view.query.id);

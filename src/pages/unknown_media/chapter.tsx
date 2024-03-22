@@ -4,7 +4,7 @@
 import { For, Show, createSignal } from "solid-js";
 import { AlertCircle, Brush, Check, CheckCircle, Edit, RotateCcw, Search, Trash } from "lucide-solid";
 
-import { SearchedChapterItem, fetchSearchedChapterList, setSearchedChapterProfile } from "@/services/parsed_media";
+import { SearchedChapterItem, fetchSearchedChapterList, fetchSearchedChapterListProcess, setSearchedChapterProfile } from "@/services/parsed_media";
 import { delete_unknown_episode } from "@/services";
 import { ViewComponent } from "@/store/types";
 import { Button, Dialog, Input, LazyImage, ListView, ScrollView } from "@/components/ui";
@@ -24,15 +24,24 @@ import { RequestCore } from "@/domains/request";
 import { ListCore } from "@/domains/list";
 import { MediaTypes } from "@/constants";
 import { NovelSearchCore } from "@/domains/media_search";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
 
 export const SearchedChapterListPage: ViewComponent = (props) => {
-  const { app, view } = props;
+  const { app, client, view } = props;
 
-  const list = new ListCore(new RequestCore(fetchSearchedChapterList), {
-    onLoadingChange(loading) {
-      refreshBtn.setLoading(loading);
-    },
-  });
+  const list = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchSearchedChapterList,
+      process: fetchSearchedChapterListProcess,
+      client,
+    }),
+    {
+      onLoadingChange(loading) {
+        refreshBtn.setLoading(loading);
+      },
+    }
+  );
   const refreshBtn = new ButtonCore({
     onClick() {
       list.refresh();
@@ -85,7 +94,9 @@ export const SearchedChapterListPage: ViewComponent = (props) => {
       deleteConfirmDialog.show();
     },
   });
-  const setMediaSourceProfileRequest = new RequestCore(setSearchedChapterProfile, {
+  const setMediaSourceProfileRequest = new RequestCoreV2({
+    fetch: setSearchedChapterProfile,
+    client,
     onLoading(loading) {
       setChapterProfileDialog.okBtn.setLoading(loading);
     },
@@ -236,14 +247,14 @@ export const SearchedChapterListPage: ViewComponent = (props) => {
                         </Show>
                       </div>
                       <div class="flex items-center mt-4 space-x-2">
-                        <Button
+                        {/* <Button
                           class="box-content"
                           variant="subtle"
                           store={selectMatchedProfileBtn.bind(episode)}
                           icon={<Brush class="w-4 h-4" />}
                         >
                           设置
-                        </Button>
+                        </Button> */}
                       </div>
                     </div>
                   </div>

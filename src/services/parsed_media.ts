@@ -1,16 +1,13 @@
-import { client } from "@/store/request";
 import { FetchParams } from "@/domains/list/typing";
-import { EpisodeResolutionTypeTexts, EpisodeResolutionTypes } from "@/domains/tv/constants";
-import { ListResponseWithCursor, MutableRecord, RequestedResource, Result } from "@/types";
-import { MediaErrorTypes, MediaTypes } from "@/constants";
+import { TmpRequestResp, request } from "@/domains/request/utils";
+import { ListResponseWithCursor, RequestedResource, Result, UnpackedResult } from "@/types/index";
 
 /**
- * 获取无法识别的 tv
+ * 获取搜索到的小说列表
  */
-export async function fetchSearchedNovelList(params: FetchParams & { keyword: string }) {
+export function fetchSearchedNovelList(params: FetchParams & { keyword: string }) {
   const { page, pageSize, keyword, ...rest } = params;
-  console.log("[SERVICES]fetchUnknownMediaList");
-  const r = await client.post<
+  return request.post<
     ListResponseWithCursor<{
       id: string;
       name: string;
@@ -30,27 +27,15 @@ export async function fetchSearchedNovelList(params: FetchParams & { keyword: st
     page,
     page_size: pageSize,
   });
-  if (r.error) {
-    return Result.Err(r.error.message);
-  }
-  return Result.Ok({
-    ...r.data,
-    list: r.data.list.map((tv) => {
-      const { id, name, profile, source } = tv;
-      return {
-        id,
-        name,
-        profile,
-        source,
-      };
-    }),
-  });
 }
-export type SearchedNovelItem = RequestedResource<typeof fetchSearchedNovelList>["list"][0];
+export type SearchedNovelItem = UnpackedResult<TmpRequestResp<typeof fetchSearchedNovelList>>["list"][0];
 
-export async function fetchSearchedNovelProfile(value: { id: string }) {
+/**
+ * 获取搜索到的小说详情、包含章节
+ */
+export function fetchSearchedNovelProfile(value: { id: string }) {
   const { id } = value;
-  const r = await client.post<{
+  return request.post<{
     id: string;
     name: string;
     profile: {
@@ -76,6 +61,8 @@ export async function fetchSearchedNovelProfile(value: { id: string }) {
   }>(`/api/v1/searched_novel/profile`, {
     searched_novel_id: id,
   });
+}
+export function fetchSearchedNovelProfileProcess(r: TmpRequestResp<typeof fetchSearchedNovelProfile>) {
   if (r.error) {
     return Result.Err(r.error.message);
   }
@@ -100,68 +87,9 @@ export async function fetchSearchedNovelProfile(value: { id: string }) {
   });
 }
 
-/**
- * 获取无法识别的 tv
- */
-export async function fetchUnknownMovieMediaList(params: FetchParams) {
-  const { page, pageSize, ...rest } = params;
-  const r = await client.post<
-    ListResponseWithCursor<{
-      id: string;
-      name: string;
-      season_text: string;
-      profile: {
-        id: string;
-        name: string;
-        poster_path: string;
-      } | null;
-      sources: {
-        id: string;
-        name: string;
-        original_name: string;
-        season_text: string;
-        episode_text: string;
-        file_name: string;
-        parent_paths: string;
-        profile: null | {
-          id: string;
-          name: string;
-          poster_path: string;
-        };
-        drive: {
-          id: string;
-          name: string;
-        };
-      }[];
-    }>
-  >(`/api/v2/admin/parsed_media/list`, {
-    ...rest,
-    type: MediaTypes.Movie,
-    page,
-    page_size: pageSize,
-  });
-  if (r.error) {
-    return Result.Err(r.error.message);
-  }
-  return Result.Ok({
-    ...r.data,
-    list: r.data.list.map((tv) => {
-      const { id, name, season_text, profile, sources } = tv;
-      return {
-        id,
-        name,
-        season_text,
-        profile,
-        sources,
-      };
-    }),
-  });
-}
-export type UnknownMovieMediaItem = RequestedResource<typeof fetchUnknownMovieMediaList>["list"][0];
-
-export async function fetchSearchedChapterList(params: FetchParams & { novel_id: string; name: string }) {
+export function fetchSearchedChapterList(params: FetchParams & { novel_id: string; name: string }) {
   const { novel_id, name, page, pageSize, ...rest } = params;
-  const r = await client.post<
+  return request.post<
     ListResponseWithCursor<{
       id: string;
       name: string;
@@ -181,6 +109,8 @@ export async function fetchSearchedChapterList(params: FetchParams & { novel_id:
     page,
     page_size: pageSize,
   });
+}
+export function fetchSearchedChapterListProcess(r: TmpRequestResp<typeof fetchSearchedChapterList>) {
   if (r.error) {
     return r;
   }
@@ -197,31 +127,7 @@ export async function fetchSearchedChapterList(params: FetchParams & { novel_id:
     }),
   });
 }
-export type SearchedChapterItem = RequestedResource<typeof fetchSearchedChapterList>["list"][0];
-
-/** 设置未解析的影视剧详情 */
-export function setParsedMediaProfile(body: {
-  parsed_media_id: string;
-  media_profile: { id: string; type: MediaTypes; name: string };
-}) {
-  const { parsed_media_id, media_profile } = body;
-  return client.post<void>("/api/v2/admin/parsed_media/set_profile", {
-    parsed_media_id,
-    media_profile,
-  });
-}
-
-/** 设置未解析的影视剧详情 */
-export function setParsedMediaProfileInFileId(body: {
-  file_id: string;
-  media_profile: { id: string; type: MediaTypes; name: string };
-}) {
-  const { file_id, media_profile } = body;
-  return client.post<void>("/api/v2/admin/parsed_media/set_profile_in_file_id", {
-    file_id,
-    media_profile,
-  });
-}
+export type SearchedChapterItem = RequestedResource<typeof fetchSearchedChapterListProcess>["list"][0];
 
 /** 设置未解析的影视剧详情 */
 export function setSearchedChapterProfile(body: {
@@ -230,61 +136,25 @@ export function setSearchedChapterProfile(body: {
   chapter_profile: { id: string; name: string };
 }) {
   const { searched_chapter_id, chapter_profile } = body;
-  return client.post<void>("/api/v1/searched_chapter/set_profile", {
+  return request.post<void>("/api/v1/searched_chapter/set_profile", {
     searched_chapter_id,
     chapter_profile,
   });
 }
 
-/** 删除解析出的影视剧记录（不删除文件） */
-export function deleteParsedMediaSource(params: { parsed_media_source_id: string }) {
-  const { parsed_media_source_id } = params;
-  return client.post("/api/v2/admin/parsed_media_source/delete", {
-    parsed_media_source_id,
-  });
+/** 删除搜索到的小说章节 */
+export function deleteSearchedNovelChapter(value: { searched_chapter_id: string }) {
+  const { searched_chapter_id } = value;
+  return request.post("/api/v1/searched_novel/chapter/delete", { searched_chapter_id });
 }
 
-export async function fetchSourcePreviewInfo(body: { id: string }) {
-  const { id } = body;
-  const r = await client.post<{
-    url: string;
-    thumbnail: string;
-    type: EpisodeResolutionTypes;
-    width: number;
-    height: number;
-    other: {
-      url: string;
-      thumbnail: string;
-      type: EpisodeResolutionTypes;
-      width: number;
-      height: number;
-    }[];
-  }>("/api/v2/admin/parsed_media_source/preview", {
-    id,
-  });
-  if (r.error) {
-    return Result.Err(r.error);
-  }
-  const { url, width, height, type, other, thumbnail } = r.data;
-  return Result.Ok({
-    file_id: id,
-    url,
-    width,
-    height,
-    type,
-    typeText: EpisodeResolutionTypeTexts[type],
-    thumbnail,
-    resolutions: other.map((r) => {
-      const { url, width, height, type, thumbnail } = r;
-      return {
-        file_id: id,
-        url,
-        width,
-        height,
-        type,
-        typeText: EpisodeResolutionTypeTexts[type],
-        thumbnail,
-      };
-    }),
-  });
+/** 删除搜索到的小说章节 */
+export function refreshSearchedNovelChapter(value: { searched_chapter_id: string }) {
+  const { searched_chapter_id } = value;
+  return request.post("/api/v1/searched_novel/chapter/delete", { searched_chapter_id });
+}
+
+export function fetchSourcePreviewInfo(values: { searched_chapter_id: string }) {
+  const { searched_chapter_id } = values;
+  return request.post("/api/v1/searched_chapter/content", { searched_chapter_id });
 }

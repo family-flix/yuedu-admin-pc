@@ -4,13 +4,16 @@
 import { For, Show, createSignal } from "solid-js";
 import { Calendar, Send, Smile } from "lucide-solid";
 
-import { SeasonMediaItem, fetchSeasonMediaList } from "@/services/media";
+import { SeasonMediaItem, fetchNovelProfileList } from "@/services/media";
 import { BaseDomain, Handler } from "@/domains/base";
 import { ButtonCore, DialogCore, DialogProps, ImageInListCore, InputCore, ScrollViewCore } from "@/domains/ui";
 import { RefCore } from "@/domains/cur";
 import { ListCore } from "@/domains/list";
 import { RequestCore } from "@/domains/request";
 import { Button, Input, LazyImage, ListView, ScrollView, Skeleton } from "@/components/ui";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
+import { HttpClientCore } from "@/domains/http_client";
 
 enum Events {
   StateChange,
@@ -25,6 +28,7 @@ type TheTypesOfEvents = {
   [Events.Clear]: void;
 };
 type TVSeasonSelectProps = {
+  client: HttpClientCore;
   onSelect?: (v: SeasonMediaItem) => void;
 } & DialogProps;
 
@@ -50,18 +54,27 @@ export class TVSeasonSelectCore extends BaseDomain<TheTypesOfEvents> {
   /** 弹窗取消按钮 */
   cancelBtn: ButtonCore;
   /** 季列表 */
-  list = new ListCore(new RequestCore(fetchSeasonMediaList), {
-    onLoadingChange: (loading) => {
-      this.searchBtn.setLoading(loading);
-    },
-  });
+  list = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchNovelProfileList,
+      // @ts-ignore
+      client: this.client,
+    }),
+    {
+      onLoadingChange: (loading) => {
+        this.searchBtn.setLoading(loading);
+      },
+    }
+  );
+  client: HttpClientCore;
   response = this.list.response;
   value = this.curSeason.value;
 
   constructor(props: Partial<{ _name: string }> & TVSeasonSelectProps) {
     super(props);
 
-    const { onSelect, onOk, onCancel } = props;
+    const { client, onSelect, onOk, onCancel } = props;
+    this.client = client;
     this.dialog = new DialogCore({
       title: "选择电视剧",
       onOk,
@@ -169,7 +182,15 @@ export const SeasonSelect = (props: { store: TVSeasonSelectCore }) => {
           <div class="space-y-4">
             <For each={tvListResponse().dataSource}>
               {(season) => {
-                const { id, name, overview, cur_episode_count, episode_count, air_date, cover_path: poster_path } = season;
+                const {
+                  id,
+                  name,
+                  overview,
+                  cur_episode_count,
+                  episode_count,
+                  air_date,
+                  cover_path: poster_path,
+                } = season;
                 return (
                   <div
                     classList={{

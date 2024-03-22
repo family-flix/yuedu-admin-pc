@@ -5,8 +5,6 @@ import { createSignal, For, Show } from "solid-js";
 import { Award, BookOpen, Calendar, Clock, Info, LocateIcon, MapPin, RotateCw, Search, Star } from "lucide-solid";
 
 import {
-  MovieMediaItem,
-  transferMediaToAnotherDrive,
   fetchNovelChapterProfileList,
   NovelChapterProfileItem,
   setSearchedChapterToChapterProfile,
@@ -32,70 +30,28 @@ import { consumeAction, pendingActions } from "@/store/actions";
 import { createJob } from "@/store/job";
 import { driveList } from "@/store/drives";
 import { SearchedChapterSelect, SearchedChapterSelectCore } from "@/components/searched-chapter-select";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
 
 export const MovieListPage: ViewComponent = (props) => {
-  const { app, history, view } = props;
-
-  const transferRequest = new RequestCore(transferMediaToAnotherDrive, {
-    onLoading(loading) {
-      transferConfirmDialog.okBtn.setLoading(loading);
-    },
-    onFailed(error) {
-      app.tip({
-        text: ["归档失败", error.message],
-      });
-    },
-    onSuccess(r) {
-      app.tip({
-        text: ["开始归档，请等待一段时间"],
-      });
-      createJob({
-        job_id: r.job_id,
-        onFinish() {
-          if (!movieRef.value) {
-            return;
-          }
-          const { name } = movieRef.value;
-          app.tip({
-            text: [`完成电影 '${name}' 归档`],
-          });
-        },
-      });
-      transferConfirmDialog.hide();
-    },
+  const { app, client, history, view } = props;
+  const searchedChapterSetRequest = new RequestCoreV2({
+    fetch: setSearchedChapterToChapterProfile,
+    client,
   });
-  const movieToResourceDriveRequest = new RequestCore(moveMovieToResourceDrive, {
-    onSuccess(r) {
-      createJob({
-        job_id: r.job_id,
-        onFinish() {
-          moveToResourceDriveConfirmDialog.okBtn.setLoading(false);
-          if (!movieRef.value) {
-            return;
-          }
-          const { name } = movieRef.value;
-          app.tip({
-            text: [`完成电影「${name}」移动到资源盘`],
-          });
-        },
-      });
-      moveToResourceDriveConfirmDialog.hide();
-    },
-    onFailed(error) {
-      moveToResourceDriveConfirmDialog.okBtn.setLoading(false);
-      app.tip({
-        text: ["移动失败", error.message],
-      });
-    },
-  });
-  const searchedChapterSetRequest = new RequestCore(setSearchedChapterToChapterProfile);
-  const movieList = new ListCore(new RequestCore(fetchNovelChapterProfileList), {
-    onLoadingChange(loading) {
-      searchBtn.setLoading(loading);
-      resetBtn.setLoading(loading);
-      refreshBtn.setLoading(loading);
-    },
-  });
+  const movieList = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchNovelChapterProfileList,
+      client,
+    }),
+    {
+      onLoadingChange(loading) {
+        searchBtn.setLoading(loading);
+        resetBtn.setLoading(loading);
+        refreshBtn.setLoading(loading);
+      },
+    }
+  );
   const refreshMovieProfilesRequest = new RequestCore(refreshMovieProfiles, {
     beforeRequest() {
       refreshMovieListBtn.setLoading(true);
@@ -145,7 +101,7 @@ export const MovieListPage: ViewComponent = (props) => {
       nameSearchInput.clear();
     },
   });
-  const searchedChapterSelect = new SearchedChapterSelectCore({});
+  const searchedChapterSelect = new SearchedChapterSelectCore({ client });
   const searchedChapterSelectDialog = new DialogCore({
     async onOk() {
       const searchedChapter = searchedChapterSelect.value;
@@ -180,41 +136,6 @@ export const MovieListPage: ViewComponent = (props) => {
       });
     },
   });
-  const tipPopover = new PopoverCore({
-    align: "end",
-  });
-  const profileBtn = new ButtonInListCore<MovieMediaItem>({
-    onClick(record) {
-      // homeMovieProfilePage.query = {
-      //   id: record.id,
-      // };
-      // app.showView(homeMovieProfilePage);
-      // homeLayout.showSubView(homeMovieProfilePage);
-      history.push("root.home_layout.movie_profile", { id: record.id });
-    },
-  });
-  const transferConfirmDialog = new DialogCore({
-    title: "移动到其他云盘",
-    onOk() {
-      if (!driveRef.value) {
-        app.tip({ text: ["请先选择目标云盘"] });
-        return;
-      }
-      const curMovie = movieRef.value;
-      if (!curMovie) {
-        app.tip({ text: ["请先选择电影"] });
-        return;
-      }
-      transferRequest.run({
-        media_id: curMovie.id,
-        to_drive_id: driveRef.value.id,
-      });
-    },
-    onCancel() {
-      driveRef.clear();
-      transferConfirmDialog.hide();
-    },
-  });
   const setSearchedChapterBtn = new ButtonInListCore<NovelChapterProfileItem>({
     onClick(record) {
       if (record === null) {
@@ -226,26 +147,6 @@ export const MovieListPage: ViewComponent = (props) => {
   });
   const avatar = new ImageInListCore({});
   const poster = new ImageInListCore({});
-  const moveToResourceDriveConfirmDialog = new DialogCore({
-    title: "移动到资源盘",
-    onOk() {
-      const curMovie = movieRef.value;
-      if (!curMovie) {
-        app.tip({ text: ["请先选择电影"] });
-        return;
-      }
-      app.tip({
-        text: ["开始移动，请等待一段时间"],
-      });
-      movieToResourceDriveRequest.run({
-        movie_id: curMovie.id,
-      });
-    },
-    onCancel() {
-      driveRef.clear();
-      transferConfirmDialog.hide();
-    },
-  });
   const refreshBtn = new ButtonCore({
     onClick() {
       movieList.refresh();
@@ -304,7 +205,7 @@ export const MovieListPage: ViewComponent = (props) => {
     setDriveResponse(nextResponse);
   });
   movieList.init();
-  driveList.initAny();
+  // driveList.initAny();
 
   return (
     <>
@@ -362,22 +263,22 @@ export const MovieListPage: ViewComponent = (props) => {
               <div class="space-y-4">
                 <For each={state().dataSource}>
                   {(movie) => {
-                    const { id, name, novel, file_count } = movie;
-                    const url = history.buildURLWithPrefix("root.home_layout.movie_profile", { id });
+                    const { id, name,  } = movie;
+                    // const url = history.buildURLWithPrefix("root.home_layout.movie_profile", { id });
                     return (
                       <div class="rounded-md border border-slate-300 bg-white shadow-sm">
                         <div class="flex">
-                          <div class="overflow-hidden mr-2 rounded-sm">
+                          {/* <div class="overflow-hidden mr-2 rounded-sm">
                             <LazyImage class="w-[86px] h-[115px]" store={poster.bind(novel.cover_path)} alt={name} />
-                          </div>
+                          </div> */}
                           <div class="flex-1 w-0 p-4">
-                            <h2 class="text-2xl text-slate-800">
+                            {/* <h2 class="text-2xl text-slate-800">
                               <a href={url} target="_blank">
                                 {novel.name}
                               </a>
                             </h2>
                             <div class="flex items-center space-x-4 mt-2">{name}</div>
-                            <div class="space-x-2 mt-6">{file_count}</div>
+                            <div class="space-x-2 mt-6">{file_count}</div> */}
                             <Button variant="subtle" store={setSearchedChapterBtn.bind(movie)}>
                               关联详情
                             </Button>

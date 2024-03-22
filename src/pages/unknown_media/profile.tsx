@@ -4,12 +4,13 @@
 import { For, Show, createSignal, onMount } from "solid-js";
 import { AlertCircle, ArrowLeft, CheckCircle, Edit, Play, Trash } from "lucide-solid";
 
-import { MediaSourceItem } from "@/services/media";
 import {
   SearchedChapterItem,
-  deleteParsedMediaSource,
+  deleteSearchedNovelChapter,
   fetchSearchedChapterList,
+  fetchSearchedChapterListProcess,
   fetchSearchedNovelProfile,
+  fetchSearchedNovelProfileProcess,
   setSearchedChapterProfile,
 } from "@/services/parsed_media";
 import { EpisodeItemInSeason, deleteSeason, SeasonInTVProfile, refreshSeasonProfile } from "@/services";
@@ -23,13 +24,18 @@ import { ListCore } from "@/domains/list";
 import { appendAction } from "@/store/actions";
 import { createJob } from "@/store/job";
 import { ViewComponent } from "@/store/types";
-import { RequestedResource } from "@/types";
+import { RequestedResource, UnpackedResult } from "@/types";
 import { NovelSearchCore } from "@/domains/media_search";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
+import { TmpRequestResp } from "@/domains/request/utils";
 
 export const SearchedNovelProfilePage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
-  const profileRequest = new RequestCore(fetchSearchedNovelProfile, {
+  const profileRequest = new RequestCoreV2({
+    fetch: fetchSearchedNovelProfile,
+    client,
     onSuccess(v) {
       poster.setURL(v.profile.cover_path);
       const { chapter } = v;
@@ -51,14 +57,16 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
       app.tip({ text: ["获取电视剧详情失败", error.message] });
     },
   });
-  const sourceDeletingRequest = new RequestCore(deleteParsedMediaSource, {
+  const sourceDeletingRequest = new RequestCoreV2({
+    fetch: deleteSearchedNovelChapter,
+    client,
     // onLoading(loading) {
     //   fileDeletingConfirmDialog.okBtn.setLoading(loading);
     // },
     onSuccess() {
-      const theEpisode = episodeRef.value;
+      // const theEpisode = episodeRef.value;
       const theSource = fileRef.value;
-      if (!theEpisode || !theSource) {
+      if (!theSource) {
         app.tip({
           text: ["删除成功，请刷新页面"],
         });
@@ -98,7 +106,9 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
       });
     },
   });
-  const setMediaSourceProfileRequest = new RequestCore(setSearchedChapterProfile, {
+  const setMediaSourceProfileRequest = new RequestCoreV2({
+    fetch: setSearchedChapterProfile,
+    client,
     onLoading(loading) {
       setChapterProfileDialog.okBtn.setLoading(loading);
     },
@@ -110,12 +120,17 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
       setChapterProfileDialog.hide();
     },
   });
-  const chapterList = new ListCore(new RequestCore(fetchSearchedChapterList), {
-    pageSize: 100,
-    search: {
-      novel_id: view.query.id,
-    },
-  });
+  const chapterList = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchSearchedChapterList,
+      process: fetchSearchedChapterListProcess,
+      client,
+      pageSize: 100,
+      search: {
+        novel_id: view.query.id,
+      },
+    })
+  );
   const curEpisode = new RefCore<SearchedChapterItem>();
   const mediaSearch = new NovelSearchCore();
   const setChapterProfileDialog = new DialogCore({
@@ -189,7 +204,7 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
   });
   const tmpSeasonRef = new RefCore<SeasonInTVProfile>();
   const seasonRef = new RefCore<SeasonInTVProfile>();
-  const episodeRef = new RefCore<MediaSourceItem>();
+  // const episodeRef = new RefCore<MediaSourceItem>();
   const fileRef = new RefCore<EpisodeItemInSeason["sources"][number]>();
   // const curParsedTV = new SelectionCore<TVProfile["parsed_tvs"][number]>();
   const searcher = new NovelProfileSearchCore();
@@ -273,7 +288,7 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
         return;
       }
       sourceDeletingRequest.run({
-        parsed_media_source_id: theSource.id,
+        searched_chapter_id: theSource.id,
       });
     },
   });
@@ -287,7 +302,9 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
     },
   });
 
-  const [profile, setProfile] = createSignal<RequestedResource<typeof fetchSearchedNovelProfile> | null>(null);
+  const [profile, setProfile] = createSignal<UnpackedResult<TmpRequestResp<typeof fetchSearchedNovelProfile>> | null>(
+    null
+  );
   const [chapterResponse, setChapterResponse] = createSignal(chapterList.response);
   const [curSeason, setCurSeason] = createSignal(seasonRef.value);
 
@@ -370,7 +387,7 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
                         <div
                           class="cursor-pointer"
                           onClick={() => {
-                            curEpisode.select(chapter);
+                            // curEpisode.select(chapter);
                             setChapterProfileDialog.show();
                           }}
                         >

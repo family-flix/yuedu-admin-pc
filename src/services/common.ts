@@ -1,6 +1,6 @@
 import { client } from "@/store/request";
 import { FetchParams } from "@/domains/list/typing";
-import { request } from "@/domains/request_v2/utils";
+import { request } from "@/domains/request/utils";
 import { ListResponseWithCursor, RequestedResource, Result } from "@/types";
 import { MediaTypes } from "@/constants";
 

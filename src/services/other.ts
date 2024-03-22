@@ -1,4 +1,4 @@
-import { request } from "@/domains/request_v2/utils";
+import { request } from "@/domains/request/utils";
 
 export function exportNovelData() {
   return request.post("/api/v1/novel_data/export");

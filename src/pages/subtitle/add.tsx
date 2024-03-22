@@ -9,7 +9,7 @@ import { ViewComponent } from "@/store/types";
 import { Dialog, ScrollView } from "@/components/ui";
 import { FileReaderCore } from "@/components/SubtitlePreview";
 import { DialogCore, ScrollViewCore } from "@/domains/ui";
-import { RequestCoreV2 } from "@/domains/request_v2";
+import { RequestCoreV2 } from "@/domains/request/v2";
 import { DragZoneCore } from "@/domains/ui/drag-zone";
 
 export const HomeSubtitleUploadPage: ViewComponent = (props) => {

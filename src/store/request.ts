@@ -25,7 +25,10 @@ export const client: HttpClientCore = {
     if (r.error) {
       return Result.Err(r.error.message);
     }
-    const { data } = r.data;
+    const { code, msg, data } = r.data;
+    if (code !== 0) {
+      return Result.Err(msg, code, data);
+    }
     return Result.Ok(data);
   },
   async post<T>(...args: Parameters<typeof _client.post>) {
@@ -33,7 +36,10 @@ export const client: HttpClientCore = {
     if (r.error) {
       return Result.Err(r.error.message);
     }
-    const { data } = r.data;
+    const { code, msg, data } = r.data;
+    if (code !== 0) {
+      return Result.Err(msg, code, data);
+    }
     return Result.Ok(data);
   },
 };

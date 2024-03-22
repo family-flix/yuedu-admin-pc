@@ -11,15 +11,23 @@ import { ButtonCore, ButtonInListCore, ImageCore, ImageInListCore, InputCore, Sc
 import { RequestCore } from "@/domains/request";
 import { ListCore } from "@/domains/list";
 import { NovelSearchCore } from "@/domains/media_search";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
 
 export const SearchedNovelListPage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
-  const list = new ListCore(new RequestCore(fetchSearchedNovelList), {
-    onLoadingChange(loading) {
-      refreshBtn.setLoading(loading);
-    },
-  });
+  const list = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchSearchedNovelList,
+      client,
+    }),
+    {
+      onLoadingChange(loading) {
+        refreshBtn.setLoading(loading);
+      },
+    }
+  );
   const refreshBtn = new ButtonCore({
     onClick() {
       list.refresh();

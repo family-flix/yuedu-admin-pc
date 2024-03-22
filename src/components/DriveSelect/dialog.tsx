@@ -22,7 +22,7 @@ export const DriveSelect = (props: { store: DriveSelectCore }) => {
     setCurDrive(nextState);
   });
 
-  driveList.initAny();
+  // driveList.initAny();
 
   return (
     <div>

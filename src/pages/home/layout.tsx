@@ -266,14 +266,12 @@ export const HomeLayout: ViewComponent = (props) => {
       url: "root.home_layout.parse_result_layout.novel",
       // view: homeUnknownTVPage,
     },
-    {
-      text: "问题影视剧",
-      icon: <HeartCrack class="w-6 h-6" />,
-      badge: false,
-      // url: "/home/invalid_media",
-      url: "root.home_layout.invalid_media_list",
-      // view: homeInvalidMediaListPage,
-    },
+    // {
+    //   text: "问题影视剧",
+    //   icon: <HeartCrack class="w-6 h-6" />,
+    //   badge: false,
+    //   url: "root.home_layout.invalid_media_list",
+    // },
     {
       text: "字幕管理",
       icon: <Subtitles class="w-6 h-6" />,
@@ -295,14 +293,12 @@ export const HomeLayout: ViewComponent = (props) => {
       // view: homeTaskListPage,
       url: "root.home_layout.job_list",
     },
-    {
-      text: "问题反馈",
-      icon: <CircuitBoard class="w-6 h-6" />,
-      badge: false,
-      // url: "/home/report",
-      // view: homeReportListPage,
-      url: "root.home_layout.report_list",
-    },
+    // {
+    //   text: "问题反馈",
+    //   icon: <CircuitBoard class="w-6 h-6" />,
+    //   badge: false,
+    //   url: "root.home_layout.report_list",
+    // },
     {
       text: "云盘文件搜索",
       icon: <File class="w-6 h-6" />,

@@ -52,7 +52,7 @@ import { Result } from "@/types";
 import { FileType } from "@/constants";
 
 export const SyncTaskListPage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
   const syncTaskList = new ListCore(new RequestCore(fetchSyncTaskList), {
     onLoadingChange(loading) {
@@ -102,9 +102,9 @@ export const SyncTaskListPage: ViewComponent = (props) => {
   //   },
   // });
   const runTaskListRequest = new RequestCore(runSyncTaskList, {
-    beforeRequest() {
-      runTaskListBtn.setLoading(true);
-    },
+    // beforeRequest() {
+    //   runTaskListBtn.setLoading(true);
+    // },
     async onSuccess(r) {
       createJob({
         job_id: r.job_id,
@@ -417,7 +417,7 @@ export const SyncTaskListPage: ViewComponent = (props) => {
     },
     footer: false,
   });
-  const seasonSelect = new TVSeasonSelectCore({});
+  const seasonSelect = new TVSeasonSelectCore({ client });
   const scrollView = new ScrollViewCore({
     pullToRefresh: false,
     onReachBottom() {

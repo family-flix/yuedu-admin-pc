@@ -2,9 +2,8 @@
  * @file 分页领域
  */
 import { BaseDomain, Handler } from "@/domains/base";
-import { RequestCoreV2 } from "@/domains/request_v2";
-import { RequestPayload, UnpackedRequestPayload } from "@/domains/request_v2/utils";
-import { RequestedResource, Result, UnpackedResult } from "@/types";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { Result, UnpackedResult } from "@/types";
 
 import { DEFAULT_RESPONSE, DEFAULT_PARAMS, DEFAULT_CURRENT_PAGE, DEFAULT_PAGE_SIZE, DEFAULT_TOTAL } from "./constants";
 import { OriginalResponse, FetchParams, Response, Search, ParamsProcessor, ListProps } from "./typing";
@@ -107,7 +106,7 @@ enum Events {
 type TheTypesOfEvents<T> = {
   [Events.LoadingChange]: boolean;
   [Events.BeforeSearch]: void;
-  [Events.AfterSearch]: void;
+  [Events.AfterSearch]: { params: Search };
   [Events.ParamsChange]: FetchParams;
   [Events.DataSourceAdded]: unknown[];
   [Events.DataSourceChange]: T[];
@@ -508,7 +507,7 @@ export class ListCoreV2<
       ...this.initialParams,
       ...params,
     });
-    this.emit(Events.AfterSearch);
+    this.emit(Events.AfterSearch, { params });
     if (res.error) {
       this.tip({ icon: "error", text: [res.error.message] });
       this.response.error = res.error;

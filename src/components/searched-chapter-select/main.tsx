@@ -4,13 +4,19 @@
 import { For, Show, createSignal } from "solid-js";
 import { Calendar, Send, Smile } from "lucide-solid";
 
-import { SearchedChapterItem, fetchSearchedChapterList } from "@/services/parsed_media";
+import {
+  SearchedChapterItem,
+  fetchSearchedChapterList,
+  fetchSearchedChapterListProcess,
+} from "@/services/parsed_media";
+import { Button, Input, LazyImage, ListView, ScrollView, Skeleton } from "@/components/ui";
 import { BaseDomain, Handler } from "@/domains/base";
 import { ButtonCore, DialogCore, DialogProps, ImageInListCore, InputCore, ScrollViewCore } from "@/domains/ui";
 import { RefCore } from "@/domains/cur";
-import { ListCore } from "@/domains/list";
-import { RequestCore } from "@/domains/request";
-import { Button, Input, LazyImage, ListView, ScrollView, Skeleton } from "@/components/ui";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
+import { HttpClientCore } from "@/domains/http_client";
+import { UnpackedResult } from "@/types";
 
 enum Events {
   StateChange,
@@ -23,12 +29,13 @@ type TheTypesOfEvents = {
   [Events.Select]: SearchedChapterItem;
   [Events.Clear]: void;
 };
-type TVSeasonSelectProps = {
+type SearchedChapterSelectProps = {
+  client: HttpClientCore;
   onSelect?: (v: SearchedChapterItem) => void;
 } & DialogProps;
 
 export class SearchedChapterSelectCore extends BaseDomain<TheTypesOfEvents> {
-  curSeason = new RefCore<SearchedChapterItem>();
+  curChapter = new RefCore<SearchedChapterItem>();
   /** 名称搜索输入框 */
   nameInput = new InputCore({
     defaultValue: "",
@@ -49,18 +56,30 @@ export class SearchedChapterSelectCore extends BaseDomain<TheTypesOfEvents> {
   /** 弹窗取消按钮 */
   cancelBtn: ButtonCore;
   /** 季列表 */
-  list = new ListCore(new RequestCore(fetchSearchedChapterList), {
-    onLoadingChange: (loading) => {
-      this.searchBtn.setLoading(loading);
-    },
-  });
-  response = this.list.response;
-  value = this.curSeason.value;
+  list: ListCoreV2<
+    RequestCoreV2<{
+      fetch: typeof fetchSearchedChapterList;
+      process: typeof fetchSearchedChapterListProcess;
+      client: HttpClientCore;
+    }>,
+    UnpackedResult<ReturnType<typeof fetchSearchedChapterListProcess>>["list"][number]
+  >;
+  response: ListCoreV2<
+    RequestCoreV2<{
+      fetch: typeof fetchSearchedChapterList;
+      process: typeof fetchSearchedChapterListProcess;
+      client: HttpClientCore;
+    }>,
+    UnpackedResult<ReturnType<typeof fetchSearchedChapterListProcess>>["list"][number]
+  >["response"];
+  value = this.curChapter.value;
+  client: HttpClientCore;
 
-  constructor(props: Partial<{ _name: string }> & TVSeasonSelectProps) {
+  constructor(props: Partial<{ _name: string }> & SearchedChapterSelectProps) {
     super(props);
 
-    const { onSelect, onOk, onCancel } = props;
+    const { client, onSelect, onOk, onCancel } = props;
+    this.client = client;
     this.dialog = new DialogCore({
       title: "选择电视剧",
       onOk,
@@ -68,11 +87,23 @@ export class SearchedChapterSelectCore extends BaseDomain<TheTypesOfEvents> {
     });
     this.okBtn = this.dialog.okBtn;
     this.cancelBtn = this.dialog.cancelBtn;
-
+    this.list = new ListCoreV2(
+      new RequestCoreV2({
+        fetch: fetchSearchedChapterList,
+        process: fetchSearchedChapterListProcess,
+        client,
+      }),
+      {
+        onLoadingChange: (loading) => {
+          this.searchBtn.setLoading(loading);
+        },
+      }
+    );
+    this.response = this.list.response;
     this.list.onStateChange((nextState) => {
       this.response = nextState;
     });
-    this.curSeason.onStateChange((nextState) => {
+    this.curChapter.onStateChange((nextState) => {
       this.value = nextState;
       if (nextState === null) {
         this.emit(Events.Clear);
@@ -90,19 +121,18 @@ export class SearchedChapterSelectCore extends BaseDomain<TheTypesOfEvents> {
     this.dialog.hide();
   }
   clear() {
-    this.curSeason.clear();
+    this.curChapter.clear();
   }
   select(season: SearchedChapterItem) {
-    //     console.log("[COMPONENT]TVSeasonSelect - select", season);
-    this.curSeason.select(season);
+    this.curChapter.select(season);
     this.emit(Events.Select, season);
   }
 
   onResponseChange(handler: Parameters<typeof this.list.onStateChange>[0]) {
     return this.list.onStateChange(handler);
   }
-  onCurSeasonChange(handler: Parameters<typeof this.curSeason.onStateChange>[0]) {
-    return this.curSeason.onStateChange(handler);
+  onCurSeasonChange(handler: Parameters<typeof this.curChapter.onStateChange>[0]) {
+    return this.curChapter.onStateChange(handler);
   }
   onSelect(handler: Handler<TheTypesOfEvents[Events.Select]>) {
     return this.on(Events.Select, handler);
@@ -129,7 +159,6 @@ export const SearchedChapterSelect = (props: { store: SearchedChapterSelectCore 
     setTVListResponse(nextState);
   });
   store.onCurSeasonChange((nextState) => {
-    //     console.log("[COMPONENT]TVSeasonSelect - store.onCurSeasonChange", nextState);
     setCurSeason(nextState);
   });
 
@@ -177,7 +206,7 @@ export const SearchedChapterSelect = (props: { store: SearchedChapterSelectCore 
                       "border-slate-300 ": curSeason()?.id !== id,
                     }}
                     onClick={() => {
-                      store.select(season);
+                      // store.select(season);
                     }}
                   >
                     <div class="flex">

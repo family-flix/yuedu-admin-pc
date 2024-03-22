@@ -16,12 +16,7 @@ import {
   Smile,
 } from "lucide-solid";
 
-import {
-  SeasonMediaItem,
-  transferMediaToAnotherDrive,
-  fetchSeasonMediaList,
-  fetchPartialSeasonMedia,
-} from "@/services/media";
+import { SeasonMediaItem, fetchNovelProfileList, fetchPartialSeasonMedia } from "@/services/media";
 import { moveSeasonToResourceDrive, refreshSeasonProfiles, refreshSeasonProfile } from "@/services";
 import {
   Skeleton,
@@ -58,73 +53,28 @@ import { Result } from "@/types";
 import { ViewComponent } from "@/store/types";
 import { MediaSourceOptions, TVGenresOptions } from "@/constants";
 import { cn } from "@/utils";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
 
 export const HomeSeasonListPage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
-  const seasonList = new ListCore(new RequestCore(fetchSeasonMediaList), {
-    onLoadingChange(loading) {
-      searchBtn.setLoading(loading);
-      resetBtn.setLoading(loading);
-      refreshBtn.setLoading(loading);
-    },
-  });
-  const moveToResourceDriveRequest = new RequestCore(moveSeasonToResourceDrive, {
-    onLoading(loading) {
-      moveToResourceDriveConfirmDialog.okBtn.setLoading(loading);
-    },
-    onFailed(error) {
-      app.tip({
-        text: ["移动失败", error.message],
-      });
-    },
-    onSuccess(r) {
-      app.tip({
-        text: ["开始移动，请等待一段时间"],
-      });
-      createJob({
-        job_id: r.job_id,
-        onFinish() {
-          if (!seasonRef.value) {
-            return;
-          }
-          const { name } = seasonRef.value;
-          app.tip({
-            text: [`完成电视剧 '${name}' 移动到资源盘`],
-          });
-        },
-      });
-      moveToResourceDriveConfirmDialog.hide();
-    },
-  });
-  const partialSeasonRequest = new RequestCore(fetchPartialSeasonMedia);
-  const transferRequest = new RequestCore(transferMediaToAnotherDrive, {
-    onLoading(loading) {
-      transferConfirmDialog.okBtn.setLoading(loading);
-    },
-    onFailed(error) {
-      app.tip({
-        text: ["归档失败", error.message],
-      });
-    },
-    onSuccess(r) {
-      app.tip({
-        text: ["开始归档，请等待一段时间"],
-      });
-      createJob({
-        job_id: r.job_id,
-        onFinish() {
-          if (!seasonRef.value) {
-            return;
-          }
-          const { name } = seasonRef.value;
-          app.tip({
-            text: [`完成电视剧 '${name}' 归档`],
-          });
-        },
-      });
-      transferConfirmDialog.hide();
-    },
+  const seasonList = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchNovelProfileList,
+      client,
+    }),
+    {
+      onLoadingChange(loading) {
+        searchBtn.setLoading(loading);
+        resetBtn.setLoading(loading);
+        refreshBtn.setLoading(loading);
+      },
+    }
+  );
+  const partialSeasonRequest = new RequestCoreV2({
+    fetch: fetchPartialSeasonMedia,
+    client,
   });
   const seasonRef = new RefCore<SeasonMediaItem>();
   const onlyInvalidCheckbox = new CheckboxCore({
@@ -224,37 +174,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
       nameSearchInput.clear();
     },
   });
-  const transferConfirmDialog = new DialogCore({
-    title: "移动到其他云盘",
-    onOk() {
-      if (!driveRef.value) {
-        app.tip({ text: ["请先选择目标云盘"] });
-        return;
-      }
-      const curSeason = seasonRef.value;
-      if (!curSeason) {
-        app.tip({ text: ["请先选择电视剧"] });
-        return;
-      }
-      transferRequest.run({
-        media_id: curSeason.id,
-        to_drive_id: driveRef.value.id,
-      });
-    },
-    onCancel() {
-      driveRef.clear();
-      transferConfirmDialog.hide();
-    },
-  });
-  const transferBtn = new ButtonInListCore<SeasonMediaItem>({
-    onClick(record) {
-      if (record === null) {
-        return;
-      }
-      seasonRef.select(record);
-      transferConfirmDialog.show();
-    },
-  });
   const refreshPartialBtn = new ButtonInListCore<SeasonMediaItem>({
     async onClick(record) {
       refreshPartialBtn.setLoading(true);
@@ -311,37 +230,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
       refreshSeasonProfilesRequest.run();
     },
   });
-  // const gotoInvalidTVListPageBtn = new ButtonCore({
-  //   onClick() {
-  //     app.showView(homeInvalidTVListPage);
-  //   },
-  // });
-  const moveToResourceDriveConfirmDialog = new DialogCore({
-    title: "移动到资源盘",
-    onOk() {
-      const curSeason = seasonRef.value;
-      if (!curSeason) {
-        app.tip({ text: ["请先选择电视剧"] });
-        return;
-      }
-      moveToResourceDriveRequest.run({
-        season_id: curSeason.id,
-      });
-    },
-    onCancel() {
-      driveRef.clear();
-      transferConfirmDialog.hide();
-    },
-  });
-  const moveToResourceDriveBtn = new ButtonInListCore<SeasonMediaItem>({
-    onClick(record) {
-      if (record === null) {
-        return;
-      }
-      seasonRef.select(record);
-      moveToResourceDriveConfirmDialog.show();
-    },
-  });
   const refreshBtn = new ButtonCore({
     onClick() {
       seasonList.refresh();
@@ -360,21 +248,21 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
 
   const [seasonListState, setSeasonListState] = createSignal(seasonList.response);
   const [tips, setTips] = createSignal<string[]>([]);
-  const [driveListState, setDriveListState] = createSignal(driveList.response);
+  // const [driveListState, setDriveListState] = createSignal(driveList.response);
   const [curDrive, setCurDrive] = createSignal(driveRef.value);
   const [hasSearch, setHasSearch] = createSignal(false);
 
-  driveList.onStateChange((nextState) => {
-    const driveCheckBoxGroupOptions = nextState.dataSource.map((d) => {
-      const { name, id } = d;
-      return {
-        value: id,
-        label: name,
-      };
-    });
-    driveCheckboxGroup.setOptions(driveCheckBoxGroupOptions);
-    setDriveListState(nextState);
-  });
+  // driveList.onStateChange((nextState) => {
+  //   const driveCheckBoxGroupOptions = nextState.dataSource.map((d) => {
+  //     const { name, id } = d;
+  //     return {
+  //       value: id,
+  //       label: name,
+  //     };
+  //   });
+  //   driveCheckboxGroup.setOptions(driveCheckBoxGroupOptions);
+  //   setDriveListState(nextState);
+  // });
   seasonList.onStateChange((nextState) => {
     setSeasonListState(nextState);
   });
@@ -392,7 +280,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
     });
   });
   seasonList.init();
-  driveList.initAny();
 
   return (
     <>
@@ -568,22 +455,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                                 >
                                   详情
                                 </Button>
-                                <Show when={cur_episode_count === episode_count}>
-                                  <Button
-                                    store={transferBtn.bind(season)}
-                                    variant="subtle"
-                                    icon={<Package class="w-4 h-4" />}
-                                  >
-                                    归档
-                                  </Button>
-                                  <Button
-                                    store={moveToResourceDriveBtn.bind(season)}
-                                    variant="subtle"
-                                    icon={<BookOpen class="w-4 h-4" />}
-                                  >
-                                    移动到资源盘
-                                  </Button>
-                                </Show>
                               </div>
                             </div>
                           </div>
@@ -597,44 +468,6 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
           </div>
         </div>
       </ScrollView>
-      <Dialog store={transferConfirmDialog}>
-        <div class="w-[520px]">
-          <div class="mt-2 space-y-4 h-[320px] overflow-y-auto">
-            <For each={driveListState().dataSource}>
-              {(drive) => {
-                const { id, name, state } = drive;
-                return (
-                  <div
-                    classList={{
-                      "bg-gray-100 border rounded-sm p-2 cursor-pointer hover:bg-gray-200": true,
-                      "border-green-500": curDrive()?.id === id,
-                    }}
-                    onClick={() => {
-                      driveRef.select(drive);
-                    }}
-                  >
-                    <div
-                      classList={{
-                        "py-2": true,
-                      }}
-                    >
-                      <div class="text-xl">{name}</div>
-                    </div>
-                    <div class="text-slate-500 text-sm">
-                      {state.used_size}/{state.total_size}
-                    </div>
-                  </div>
-                );
-              }}
-            </For>
-          </div>
-        </div>
-      </Dialog>
-      <Dialog store={moveToResourceDriveConfirmDialog}>
-        <div class="w-[520px]">
-          <div>将电视剧移动到资源盘后才能公开分享</div>
-        </div>
-      </Dialog>
       <Popover
         store={tipPopover}
         content={

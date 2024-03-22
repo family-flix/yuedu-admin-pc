@@ -4,84 +4,115 @@
 import { For, Show, createSignal, onMount } from "solid-js";
 import { ArrowLeft, Play, Trash } from "lucide-solid";
 
-import { MediaSourceItem, SeasonMediaProfile, fetchSeasonMediaProfile, setMediaProfile } from "@/services/media";
-import { deleteParsedMediaSource } from "@/services/parsed_media";
+import { ViewComponent } from "@/store/types";
+import { appendAction } from "@/store/actions";
+import { createJob } from "@/store/job";
 import {
-  fetchEpisodesOfSeason,
-  EpisodeItemInSeason,
-  deleteSeason,
-  SeasonInTVProfile,
-  refreshSeasonProfile,
-} from "@/services";
+  NovelChapterProfileItem,
+  NovelProfile,
+  fetchNovelChapterProfileList,
+  fetchNovelProfile,
+  setSearchedChapterToChapterProfile,
+} from "@/services/media";
+import { deleteSearchedNovelChapter } from "@/services/parsed_media";
+import { fetchEpisodesOfSeason, deleteSeason, SeasonInTVProfile, refreshSeasonProfile } from "@/services";
 import { Button, ContextMenu, ScrollView, Skeleton, Dialog, LazyImage, ListView, Input } from "@/components/ui";
-import { NovelProfileSearchView } from "@/components/TMDBSearcher";
+import { SearchedChapterSelect, SearchedChapterSelectCore } from "@/components/searched-chapter-select";
 import {
   MenuItemCore,
   ContextMenuCore,
   ScrollViewCore,
   DialogCore,
   ButtonCore,
-  InputCore,
   ImageCore,
   ImageInListCore,
+  ButtonInListCore,
 } from "@/domains/ui";
 import { RequestCore } from "@/domains/request";
 import { RefCore } from "@/domains/cur";
 import { NovelProfileSearchCore } from "@/domains/tmdb";
-import { ListCore } from "@/domains/list";
-import { appendAction } from "@/store/actions";
-import { createJob } from "@/store/job";
-import { ViewComponent } from "@/store/types";
-import { bytes_to_size, cn } from "@/utils";
+import { RequestCoreV2 } from "@/domains/request/v2";
+import { ListCoreV2 } from "@/domains/list/v2";
+import { cn } from "@/utils";
 
 export const HomeSeasonProfilePage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
-  const profileRequest = new RequestCore(fetchSeasonMediaProfile, {
+  const chapterList = new ListCoreV2(
+    new RequestCoreV2({
+      fetch: fetchNovelChapterProfileList,
+      client,
+    }),
+    {
+      pageSize: 100,
+    }
+  );
+  const profileRequest = new RequestCoreV2({
+    fetch: fetchNovelProfile,
+    client,
     onSuccess(v) {
       poster.setURL(v.poster_path);
       setProfile(v);
+      setTimeout(() => {
+        chapterList.setParams((prev) => {
+          return {
+            ...prev,
+            next_marker: v.chapter.next_marker,
+          };
+        });
+        chapterList.modifyResponse((prev) => {
+          return {
+            ...prev,
+            search: {
+              ...prev.search,
+              novel_id: v.id,
+            },
+            dataSource: v.chapter.list,
+          };
+        });
+      }, 800);
     },
     onFailed(error) {
       app.tip({ text: ["获取电视剧详情失败", error.message] });
     },
   });
-  const sourceDeletingRequest = new RequestCore(deleteParsedMediaSource, {
+  const sourceDeletingRequest = new RequestCoreV2({
+    fetch: deleteSearchedNovelChapter,
+    client,
     // onLoading(loading) {
     //   fileDeletingConfirmDialog.okBtn.setLoading(loading);
     // },
     onSuccess() {
-      const theEpisode = episodeRef.value;
       const theSource = fileRef.value;
-      if (!theEpisode || !theSource) {
+      if (!theSource) {
         app.tip({
           text: ["删除成功，请刷新页面"],
         });
         return;
       }
-      setProfile((prev) => {
-        if (prev === null) {
-          return null;
-        }
-        const { episodes, ...rest } = prev;
-        return {
-          ...rest,
-          episodes: episodes.map((episode) => {
-            if (episode.id !== theEpisode.id) {
-              return episode;
-            }
-            return {
-              ...episode,
-              sources: episode.sources.filter((source) => {
-                if (source.id !== theSource.id) {
-                  return true;
-                }
-                return false;
-              }),
-            };
-          }),
-        };
-      });
+      // setProfile((prev) => {
+      //   if (prev === null) {
+      //     return null;
+      //   }
+      //   const { episodes, ...rest } = prev;
+      //   return {
+      //     ...rest,
+      //     episodes: episodes.map((episode) => {
+      //       if (episode.id !== theEpisode.id) {
+      //         return episode;
+      //       }
+      //       return {
+      //         ...episode,
+      //         sources: episode.sources.filter((source) => {
+      //           if (source.id !== theSource.id) {
+      //             return true;
+      //           }
+      //           return false;
+      //         }),
+      //       };
+      //     }),
+      //   };
+      // });
       // fileDeletingConfirmDialog.hide();
       app.tip({
         text: ["删除成功"],
@@ -93,11 +124,9 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
       });
     },
   });
-  const curEpisodeList = new ListCore(new RequestCore(fetchEpisodesOfSeason), {
-    search: {
-      tv_id: view.query.id,
-      season_id: view.query.season_id,
-    },
+  const searchedChapterSetRequest = new RequestCoreV2({
+    fetch: setSearchedChapterToChapterProfile,
+    client,
   });
   const seasonDeletingRequest = new RequestCore(deleteSeason, {
     onLoading(loading) {
@@ -120,15 +149,6 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
       history.back();
     },
   });
-  const seasonProfileChangeRequest = new RequestCore(setMediaProfile, {
-    onLoading(loading) {
-      dialog.okBtn.setLoading(loading);
-    },
-    onSuccess() {
-      app.tip({ text: ["更新详情成功"] });
-      profileRequest.reload();
-    },
-  });
   const seasonProfileRefreshRequest = new RequestCore(refreshSeasonProfile, {
     onSuccess(r) {
       createJob({
@@ -147,11 +167,9 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
       profileRefreshBtn.setLoading(false);
     },
   });
-  const tmpSeasonRef = new RefCore<SeasonInTVProfile>();
   const seasonRef = new RefCore<SeasonInTVProfile>();
-  const episodeRef = new RefCore<MediaSourceItem>();
-  const fileRef = new RefCore<EpisodeItemInSeason["sources"][number]>();
-  // const curParsedTV = new SelectionCore<TVProfile["parsed_tvs"][number]>();
+  const chapterRef = new RefCore<NovelChapterProfileItem>();
+  const fileRef = new RefCore<NovelChapterProfileItem["files"][number]>();
   const searcher = new NovelProfileSearchCore();
   const dialog = new DialogCore({
     onOk() {
@@ -174,6 +192,50 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
       //     name: media.name,
       //   },
       // });
+    },
+  });
+  const searchedChapterSelect = new SearchedChapterSelectCore({ client });
+  const searchedChapterSelectDialog = new DialogCore({
+    async onOk() {
+      const searchedChapter = searchedChapterSelect.value;
+      if (!searchedChapter) {
+        app.tip({
+          text: ["请先选择关联的章节"],
+        });
+        return;
+      }
+      const chapter = chapterRef.value;
+      if (!chapter) {
+        app.tip({
+          text: ["请先要关联的章节"],
+        });
+        return;
+      }
+      searchedChapterSelectDialog.okBtn.setLoading(true);
+      const r = await searchedChapterSetRequest.run({
+        searched_chapter_id: searchedChapter.id,
+        chapter_id: chapter.id,
+      });
+      searchedChapterSelectDialog.okBtn.setLoading(false);
+      if (r.error) {
+        app.tip({
+          text: ["设置失败", r.error.message],
+        });
+        return;
+      }
+      searchedChapterSelectDialog.hide();
+      app.tip({
+        text: ["设置成功"],
+      });
+    },
+  });
+  const setSearchedChapterBtn = new ButtonInListCore<NovelChapterProfileItem>({
+    onClick(record) {
+      if (record === null) {
+        return;
+      }
+      chapterRef.select(record);
+      searchedChapterSelectDialog.show();
     },
   });
   const profileChangeBtn = new ButtonCore({
@@ -233,7 +295,7 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
         return;
       }
       sourceDeletingRequest.run({
-        parsed_media_source_id: theSource.id,
+        searched_chapter_id: theSource.id,
       });
     },
   });
@@ -241,7 +303,6 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
     items: [deleteSeasonMenuItem],
   });
   const poster = new ImageCore({});
-  const seriesPoster = new ImageInListCore({});
   // const profileTitleInput = new InputCore({
   //   defaultValue: "",
   //   placeholder: "请输入电视剧标题",
@@ -275,38 +336,24 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
   // });
   const scrollView = new ScrollViewCore({
     onReachBottom() {
-      curEpisodeList.loadMore();
+      chapterList.loadMore();
     },
   });
 
-  const [profile, setProfile] = createSignal<SeasonMediaProfile | null>(null);
-  const [curEpisodeResponse, setCurEpisodeResponse] = createSignal(curEpisodeList.response);
+  const [profile, setProfile] = createSignal<NovelProfile | null>(null);
+  const [chapterResponse, setChapterResponse] = createSignal(chapterList.response);
   const [curSeason, setCurSeason] = createSignal(seasonRef.value);
-  const [sizeCount, setSizeCount] = createSignal<string | null>(null);
 
   seasonRef.onStateChange((nextState) => {
     setCurSeason(nextState);
   });
-  // curEpisodeList.onStateChange((nextResponse) => {
-  //   const sourceSizeCount = nextResponse.dataSource.reduce((count, cur) => {
-  //     const curCount = cur.sources.reduce((total, cur) => {
-  //       return total + cur.size;
-  //     }, 0);
-  //     return count + curCount;
-  //   }, 0);
-  //   setSizeCount(bytes_to_size(sourceSizeCount));
-  //   setCurEpisodeResponse(nextResponse);
-  // });
-  // curEpisodeList.onComplete(() => {
-  //   seasonRef.select({
-  //     id: curEpisodeList.params.season_id as string,
-  //     name: tmpSeasonRef.value?.name ?? "",
-  //     season_text: tmpSeasonRef.value?.season_text ?? "",
-  //   });
-  // });
+  chapterList.onStateChange((nextResponse) => {
+    console.log("chapterList", nextResponse.dataSource);
+    setChapterResponse(nextResponse);
+  });
 
   onMount(() => {
-    profileRequest.run({ season_id: view.query.id });
+    profileRequest.run({ novel_id: view.query.id, invalid_chapter: 1 });
   });
 
   return (
@@ -360,10 +407,6 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
                         <h2 class="text-5xl">{profile()?.name}</h2>
                         <div class="mt-6 text-2xl">剧情简介</div>
                         <div class="mt-2">{profile()?.overview}</div>
-                        {/* <div class="mt-4">
-                          <a href={`https://www.themoviedb.org/tv/${profile()?.tmdb_id}`}>TMDB</a>
-                        </div> */}
-                        <div>{sizeCount()}</div>
                       </div>
                     </div>
                   </div>
@@ -371,133 +414,77 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
               </div>
               <div class="relative z-3 mt-4">
                 <div class="flex items-center space-x-4 whitespace-nowrap">
-                  {/* <Button store={profileUpdateBtn}>修改详情</Button> */}
                   <Button store={profileChangeBtn}>变更详情</Button>
                   <Button store={profileRefreshBtn}>刷新详情</Button>
-                  <Button store={seasonDeletingBtn}>删除季</Button>
-                </div>
-                <div class="space-y-4 mt-8">
-                  <For each={profile()?.episodes}>
-                    {(episode) => {
-                      const { id, name, episode_number, runtime, sources } = episode;
-                      return (
-                        <div title={id}>
-                          <div class="text-lg">
-                            {episode_number}、{name}
-                            <Show when={runtime}>
-                              <span class="text-gray-500 text-sm">({runtime}min)</span>
-                            </Show>
-                          </div>
-                          <div class="pl-4 space-y-1">
-                            <For each={sources}>
-                              {(source) => {
-                                const { id, file_name, parent_paths, drive } = source;
-                                return (
-                                  <div class="flex items-center space-x-4 text-slate-500">
-                                    <span class="break-all" title={`[${drive.name}]${parent_paths}/${file_name}`}>
-                                      [{drive.name}]{parent_paths}/{file_name}
-                                    </span>
-                                    <div class="flex items-center space-x-2">
-                                      <div
-                                        class="p-1 cursor-pointer"
-                                        title="播放"
-                                        onClick={() => {
-                                          history.push("root.preview", { id });
-                                          // mediaPlayingPage.query = {
-                                          //   id,
-                                          // };
-                                          // app.showView(mediaPlayingPage);
-                                        }}
-                                      >
-                                        <Play class="w-4 h-4" />
-                                      </div>
-                                      <div
-                                        class="p-1 cursor-pointer"
-                                        title="删除源"
-                                        onClick={() => {
-                                          episodeRef.select(episode);
-                                          fileRef.select(source);
-                                          // fileDeletingConfirmDialog.show();
-                                          sourceDeletingRequest.run({
-                                            parsed_media_source_id: id,
-                                          });
-                                        }}
-                                      >
-                                        <Trash class="w-4 h-4" />
-                                      </div>
-                                    </div>
-                                  </div>
-                                );
-                              }}
-                            </For>
-                          </div>
-                        </div>
-                      );
-                    }}
-                  </For>
-                </div>
-                <div class="mt-4 flex w-full pb-4 overflow-x-auto space-x-4">
-                  <For each={profile()?.series}>
-                    {(season) => {
-                      const { id, name, poster_path, air_date } = season;
-                      const url = `/home/season_profile?id=${id}`;
-                      // const url = homeTVProfilePage.buildUrlWithPrefix({
-                      //   id,
-                      // });
-                      return (
-                        <div>
-                          <a href={url} target="_blank">
-                            <div>
-                              <LazyImage class="w-[120px]" store={seriesPoster.bind(poster_path)} />
-                            </div>
-                          </a>
-                          <div class="text-xl whitespace-nowrap">{name}</div>
-                          <div class="">{air_date}</div>
-                        </div>
-                      );
-                    }}
-                  </For>
                 </div>
               </div>
+            </div>
+            <div class="space-y-4 mt-8">
+              <For each={chapterResponse().dataSource}>
+                {(chapter) => {
+                  const { id, name, files } = chapter;
+                  return (
+                    <div title={id}>
+                      <div
+                        class={cn("text-lg", files.length === 0 ? "text-red-500" : "")}
+                        onClick={() => {
+                          chapterRef.select(chapter);
+                          searchedChapterSelectDialog.show();
+                        }}
+                      >
+                        {name}
+                      </div>
+                      <div class="pl-4 space-y-1">
+                        <For each={files}>
+                          {(source) => {
+                            const { id, name, novel_name, source_name } = source;
+                            return (
+                              <div class="flex items-center space-x-4 text-slate-500">
+                                <span class={cn("break-all")} title={`[${source_name}]${novel_name}`}>
+                                  [{source_name}]{name}
+                                </span>
+                                <div class="flex items-center space-x-2">
+                                  <div
+                                    class="p-1 cursor-pointer"
+                                    title="播放"
+                                    onClick={() => {
+                                      history.push("root.preview", { id });
+                                    }}
+                                  >
+                                    <Play class="w-4 h-4" />
+                                  </div>
+                                  <div
+                                    class="p-1 cursor-pointer"
+                                    title="删除源"
+                                    onClick={() => {
+                                      fileRef.select(source);
+                                      sourceDeletingRequest.run({
+                                        searched_chapter_id: id,
+                                      });
+                                    }}
+                                  >
+                                    <Trash class="w-4 h-4" />
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }}
+                        </For>
+                      </div>
+                    </div>
+                  );
+                }}
+              </For>
             </div>
           </Show>
         </div>
         <div class="h-[120px]"></div>
       </ScrollView>
-      <Dialog title="设置电视详情" store={dialog}>
+      <Dialog store={searchedChapterSelectDialog}>
         <div class="w-[520px]">
-          {/* <NovelProfileSearchView store={searcher} /> */}
+          <SearchedChapterSelect store={searchedChapterSelect} />
         </div>
       </Dialog>
-      {/* <Dialog store={profileManualUpdateDialog}>
-        <div class="w-[520px]">
-          <div class="space-y-4">
-            <div class="space-y-1">
-              <div>标题</div>
-              <Input store={profileTitleInput} />
-            </div>
-            <div class="space-y-1">
-              <div>集数</div>
-              <Input store={profileEpisodeCountInput} />
-            </div>
-          </div>
-        </div>
-      </Dialog> */}
-      <Dialog store={seasonDeletingConfirmDialog}>
-        <div class="w-[520px]">
-          <div class="text-lg">确认删除「{curSeason()?.name}」吗？</div>
-          <div class="mt-4 text-slate-800">
-            <div>该仅删除本地索引记录，不影响实际文件</div>
-            <div>如需删除云盘文件请到云盘详情页操作</div>
-          </div>
-        </div>
-      </Dialog>
-      {/* <Dialog store={fileDeletingConfirmDialog}>
-        <div class="w-[520px]">
-          <div>该操作仅删除解析结果</div>
-          <div>不影响云盘内文件</div>
-        </div>
-      </Dialog> */}
       <ContextMenu store={seasonContextMenu} />
     </>
   );

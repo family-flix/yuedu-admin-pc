@@ -14,6 +14,7 @@ import { Result } from "@/types";
 
 import { PageKeys, RouteConfig, routes } from "./routes";
 import { storage } from "./storage";
+import { ListCoreV2 } from "@/domains/list/v2";
 
 NavigatorCore.prefix = "/admin";
 
@@ -84,7 +85,7 @@ user.onExpired(() => {
   history.push("root.login");
 });
 
-ListCore.commonProcessor = <T>(
+const commonProcessor = <T>(
   originalResponse: any
 ): {
   dataSource: T[];
@@ -151,3 +152,5 @@ ListCore.commonProcessor = <T>(
     };
   }
 };
+ListCore.commonProcessor = commonProcessor;
+ListCoreV2.commonProcessor = commonProcessor;

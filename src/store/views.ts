@@ -16,18 +16,18 @@ import { TestPage } from "@/pages/test";
 import { PersonListPage } from "@/pages/person";
 import { SharedFilesTransferPage } from "@/pages/resource";
 import { MovieListPage } from "@/pages/movie";
-import { MovieProfilePage } from "@/pages/movie/profile";
+// import { MovieProfilePage } from "@/pages/movie/profile";
 import { MediaPlayingPage } from "@/pages/play/index";
 import { SyncTaskListPage } from "@/pages/sync_task";
 import { HomeMemberListPage } from "@/pages/member";
 import { VideoParsingPage } from "@/pages/parse";
-import { HomeReportListPage } from "@/pages/report";
+// import { HomeReportListPage } from "@/pages/report";
 import { HomePermissionPage } from "@/pages/permission";
 import { HomeSubtitleUploadPage } from "@/pages/subtitle/add";
 import { HomeSubtitleListPage } from "@/pages/subtitle";
 import { SharedFilesHistoryPage } from "@/pages/resource/list";
 import { SharedFilesTransferListPage } from "@/pages/resource/transfer";
-import { InvalidMediaListPage } from "@/pages/media_error";
+// import { InvalidMediaListPage } from "@/pages/media_error";
 import { OuterMediaProfilePage } from "@/pages/outer_profile";
 
 import { ViewComponent } from "@/store/types";
@@ -41,8 +41,8 @@ export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout.season_list": HomeSeasonListPage,
   "root.home_layout.season_profile": HomeSeasonProfilePage,
   "root.home_layout.movie_list": MovieListPage,
-  "root.home_layout.movie_profile": MovieProfilePage,
-  "root.home_layout.invalid_media_list": InvalidMediaListPage,
+  // "root.home_layout.movie_profile": MovieProfilePage,
+  // "root.home_layout.invalid_media_list": InvalidMediaListPage,
   "root.home_layout.permission": PersonListPage,
   "root.home_layout.person_list": HomePermissionPage,
   "root.home_layout.parse_result_layout": UnknownMediaLayout,
@@ -53,7 +53,7 @@ export const pages: Omit<Record<PageKeys, ViewComponent>, "root"> = {
   "root.home_layout.resource_sync": SyncTaskListPage,
   "root.home_layout.job_list": LogListPage,
   "root.home_layout.job_profile": LogProfilePage,
-  "root.home_layout.report_list": HomeReportListPage,
+  // "root.home_layout.report_list": HomeReportListPage,
   "root.home_layout.subtitles_list": HomeSubtitleListPage,
   "root.home_layout.subtitles_create": HomeSubtitleUploadPage,
   "root.preview": MediaPlayingPage,

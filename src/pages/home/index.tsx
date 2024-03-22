@@ -24,7 +24,7 @@ import { ListCoreV2 } from "@/domains/list/v2";
 import { FilenameParserCore } from "@/components/FilenameParser";
 import { DynamicContent } from "@/components/DynamicContent";
 import { DynamicContentCore } from "@/domains/ui/dynamic-content";
-import { RequestCoreV2 } from "@/domains/request_v2";
+import { RequestCoreV2 } from "@/domains/request/v2";
 import { DriveTypes, ReportTypes } from "@/constants";
 import { ViewComponent } from "@/store/types";
 import { downloadFile } from "@/utils/download";
@@ -319,7 +319,6 @@ export const HomeIndexPage: ViewComponent = (props) => {
                 <span
                   class="text-3xl cursor-pointer"
                   onClick={() => {
-                    history.push("root.home_layout.invalid_media_list");
                     // app.showView(homeInvalidMediaListPage);
                   }}
                 >
@@ -331,8 +330,6 @@ export const HomeIndexPage: ViewComponent = (props) => {
                 <div
                   class="text-3xl cursor-pointer"
                   onClick={() => {
-                    history.push("root.home_layout.invalid_media_list");
-                    // app.showView(homeInvalidMediaListPage);
                   }}
                 >
                   {dashboard()?.invalid_movie_count}
@@ -352,8 +349,6 @@ export const HomeIndexPage: ViewComponent = (props) => {
               <div
                 class="w-[240px] cursor-pointer"
                 onClick={() => {
-                  history.push("root.home_layout.report_list", { type: String(ReportTypes.Want) });
-                  // app.showView(homeReportListPage);
                 }}
               >
                 <div class="text-3xl">{dashboard()?.media_request_count}</div>
@@ -362,8 +357,6 @@ export const HomeIndexPage: ViewComponent = (props) => {
               <div
                 class="w-[240px] cursor-pointer"
                 onClick={() => {
-                  history.push("root.home_layout.report_list");
-                  // app.showView(homeReportListPage);
                 }}
               >
                 <div class="text-3xl">{dashboard()?.report_count}</div>

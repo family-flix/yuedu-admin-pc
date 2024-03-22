@@ -2,7 +2,7 @@ import { client } from "@/store/request";
 import { FetchParams } from "@/domains/list/typing";
 import { FileType, MediaTypes } from "@/constants";
 import { ListResponse, RequestedResource, Result } from "@/types";
-import { request } from "@/domains/request_v2/utils";
+import { request } from "@/domains/request/utils";
 
 /**
  * 获取指定云盘内文件夹列表

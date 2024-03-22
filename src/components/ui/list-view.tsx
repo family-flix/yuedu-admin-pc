@@ -5,22 +5,28 @@ import { Show, createSignal } from "solid-js";
 import { JSX } from "solid-js/jsx-runtime";
 import { AlertCircle, ArrowDown, Bird, Loader } from "lucide-solid";
 
-import { ListCore } from "@/domains/list";
-import { cn } from "@/utils";
+import { ListCore } from "@/domains/list/index";
+import { ListCoreV2 } from "@/domains/list/v2";
+import { cn } from "@/utils/index";
+import { effect } from "solid-js/web";
 
 export function ListView(
-  props: { store: ListCore<any, any>; skeleton?: JSX.Element } & JSX.HTMLAttributes<HTMLDivElement>
+  props: {
+    store: ListCore<any, any> | ListCoreV2<any, any>;
+    skeleton?: JSX.Element;
+  } & JSX.HTMLAttributes<HTMLDivElement>
 ) {
   const { store, skeleton } = props;
   const [response, setResponse] = createSignal(store.response);
 
   store.onStateChange((nextState) => {
-    // console.log("[COMPONENT]ListView - store.onStateChange", nextState.dataSource);
+    console.log("[COMPONENT]ListView - store.onStateChange", nextState.dataSource);
     setResponse(nextState);
   });
+  console.log("[COMPONENT]ListView - init");
 
   return (
-    <div class={cn("relative")}>
+    <div class={cn("list-view relative")}>
       <div class={props.class}>
         <Show
           when={response().initial}

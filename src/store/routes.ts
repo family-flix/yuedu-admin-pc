@@ -30,16 +30,16 @@ const configure = {
             pathname: "/home/movie",
             children: {},
           },
-          movie_profile: {
-            title: "电影详情",
-            pathname: "/home/movie_profile",
-            children: {},
-          },
-          invalid_media_list: {
-            title: "影视剧待处理问题",
-            pathname: "/home/invalid_media",
-            children: {},
-          },
+          // movie_profile: {
+          //   title: "电影详情",
+          //   pathname: "/home/movie_profile",
+          //   children: {},
+          // },
+          // invalid_media_list: {
+          //   title: "影视剧待处理问题",
+          //   pathname: "/home/invalid_media",
+          //   children: {},
+          // },
           person_list: {
             title: "参演人员列表",
             pathname: "/home/person",
@@ -101,11 +101,11 @@ const configure = {
             pathname: "/home/subtitles/create",
             children: {},
           },
-          report_list: {
-            title: "问题列表",
-            pathname: "/home/report",
-            children: {},
-          },
+          // report_list: {
+          //   title: "问题列表",
+          //   pathname: "/home/report",
+          //   children: {},
+          // },
         },
       },
       preview: {

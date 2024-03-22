@@ -26,7 +26,7 @@ import { ViewComponent } from "@/store/types";
 import { cn } from "@/utils";
 
 export const HomeMemberListPage: ViewComponent = (props) => {
-  const { app, history, view } = props;
+  const { app, client, history, view } = props;
 
   const memberList = new ListCore(new RequestCore(fetchMemberList), {
     onLoadingChange(loading) {
@@ -203,6 +203,7 @@ export const HomeMemberListPage: ViewComponent = (props) => {
     },
   });
   const seasonSelect = new TVSeasonSelectCore({
+    client,
     async onOk() {
       const member = memberRef.value;
       if (!member) {
