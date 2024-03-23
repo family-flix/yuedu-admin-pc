@@ -148,7 +148,6 @@ export const SearchedChapterSelect = (props: { store: SearchedChapterSelectCore 
   const [tvListResponse, setTVListResponse] = createSignal(store.response);
   const [curSeason, setCurSeason] = createSignal(store.value);
 
-  const poster = new ImageInListCore({});
   const scrollView = new ScrollViewCore({
     onReachBottom() {
       store.list.loadMore();
@@ -196,8 +195,8 @@ export const SearchedChapterSelect = (props: { store: SearchedChapterSelectCore 
         >
           <div class="space-y-4">
             <For each={tvListResponse().dataSource}>
-              {(season) => {
-                const { id, name, searched_novel } = season;
+              {(chapter) => {
+                const { id, name, searched_novel } = chapter;
                 return (
                   <div
                     classList={{
@@ -206,7 +205,7 @@ export const SearchedChapterSelect = (props: { store: SearchedChapterSelectCore 
                       "border-slate-300 ": curSeason()?.id !== id,
                     }}
                     onClick={() => {
-                      // store.select(season);
+                      store.select(chapter);
                     }}
                   >
                     <div class="flex">

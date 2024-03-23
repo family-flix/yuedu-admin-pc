@@ -227,6 +227,9 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
       app.tip({
         text: ["设置成功"],
       });
+      chapterList.deleteItem((c) => {
+        return c.id === chapter.id;
+      });
     },
   });
   const setSearchedChapterBtn = new ButtonInListCore<NovelChapterProfileItem>({
