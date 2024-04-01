@@ -62,6 +62,7 @@ export function fetchSearchedNovelProfile(value: { id: string }) {
     searched_novel_id: id,
   });
 }
+
 export function fetchSearchedNovelProfileProcess(r: TmpRequestResp<typeof fetchSearchedNovelProfile>) {
   if (r.error) {
     return Result.Err(r.error.message);
@@ -128,6 +129,15 @@ export function fetchSearchedChapterListProcess(r: TmpRequestResp<typeof fetchSe
   });
 }
 export type SearchedChapterItem = RequestedResource<typeof fetchSearchedChapterListProcess>["list"][0];
+
+export function fetchSearchedNovelChapterContent(value: { searched_chapter_id: string }) {
+  const { searched_chapter_id } = value;
+  return request.post<{
+    content: string;
+  }>("/api/v1/searched_chapter/content", {
+    searched_chapter_id,
+  });
+}
 
 /** 设置未解析的影视剧详情 */
 export function setSearchedChapterProfile(body: {

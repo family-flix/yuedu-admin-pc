@@ -31,9 +31,7 @@ export function fetchNovelProfileList(params: FetchParams & Partial<{ name: stri
 export type SeasonMediaItem = UnpackedRequestPayload<ReturnType<typeof fetchNovelProfileList>>["list"][number];
 
 /** 获取小说章节列表 */
-export function fetchNovelChapterProfileList(
-  params: FetchParams & Partial<{ name: string; invalid_chapter?: number }>
-) {
+export function fetchNovelChapterProfileList(params: FetchParams & Partial<{ name: string; invalid_chapter?: number }>) {
   const { name, invalid_chapter, page, pageSize, ...rest } = params;
   return request.post<
     ListResponseWithCursor<{
@@ -54,9 +52,7 @@ export function fetchNovelChapterProfileList(
     page_size: pageSize,
   });
 }
-export type NovelChapterProfileItem = UnpackedResult<
-  TmpRequestResp<typeof fetchNovelChapterProfileList>
->["list"][number];
+export type NovelChapterProfileItem = UnpackedResult<TmpRequestResp<typeof fetchNovelChapterProfileList>>["list"][number];
 /** 获取小说详情 */
 export function fetchNovelProfile(body: { novel_id: string; invalid_chapter?: number }) {
   const { novel_id, invalid_chapter } = body;
@@ -138,4 +134,8 @@ export function refreshMediaProfile(body: { media_id: string }) {
 /** 给书源章节设置详情 */
 export function setSearchedChapterToChapterProfile(value: { searched_chapter_id: string; chapter_id: string }) {
   return request.post("/api/v1/novel_profile/chapter/set_profile", value);
+}
+
+export function refreshSearchedNovelOfNovelProfile(novel: { novel_id: string }) {
+  return request.post("/api/v1/novel_profile/refresh_source", novel);
 }

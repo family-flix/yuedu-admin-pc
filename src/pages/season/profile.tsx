@@ -53,24 +53,20 @@ export const HomeSeasonProfilePage: ViewComponent = (props) => {
     onSuccess(v) {
       poster.setURL(v.poster_path);
       setProfile(v);
-      setTimeout(() => {
-        chapterList.setParams((prev) => {
-          return {
-            ...prev,
-            next_marker: v.chapter.next_marker,
-          };
-        });
-        chapterList.modifyResponse((prev) => {
-          return {
-            ...prev,
-            search: {
-              ...prev.search,
-              novel_id: v.id,
-            },
-            dataSource: v.chapter.list,
-          };
-        });
-      }, 800);
+      console.log(v.id);
+      chapterList.setParams((prev) => {
+        return {
+          ...prev,
+          novel_id: v.id,
+          next_marker: v.chapter.next_marker,
+        };
+      });
+      chapterList.modifyResponse((prev) => {
+        return {
+          ...prev,
+          dataSource: v.chapter.list,
+        };
+      });
     },
     onFailed(error) {
       app.tip({ text: ["获取电视剧详情失败", error.message] });

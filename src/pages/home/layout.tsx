@@ -246,14 +246,14 @@ export const HomeLayout: ViewComponent = (props) => {
       // view: homeIndexPage,
     },
     {
-      text: "电视剧",
+      text: "小说",
       icon: <Tv class="w-6 h-6" />,
       // url: "/home/season",
       url: "root.home_layout.season_list",
       // view: homeSeasonListPage,
     },
     {
-      text: "电影",
+      text: "书源小说",
       icon: <Film class="w-6 h-6" />,
       // url: "/home/movie",
       url: "root.home_layout.movie_list",
@@ -441,14 +441,7 @@ export const HomeLayout: ViewComponent = (props) => {
                     store={subView}
                     index={i()}
                   >
-                    <PageContent
-                      app={app}
-                      client={client}
-                      storage={storage}
-                      pages={pages}
-                      history={history}
-                      view={subView}
-                    />
+                    <PageContent app={app} client={client} storage={storage} pages={pages} history={history} view={subView} />
                   </KeepAliveRouteView>
                 );
               }}

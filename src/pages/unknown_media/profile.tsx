@@ -2,13 +2,14 @@
  * @file 电视剧详情
  */
 import { For, Show, createSignal, onMount } from "solid-js";
-import { AlertCircle, ArrowLeft, CheckCircle, Edit, Play, Trash } from "lucide-solid";
+import { AlertCircle, ArrowLeft, CheckCircle, Edit, Eye, Play, Trash } from "lucide-solid";
 
 import {
   SearchedChapterItem,
   deleteSearchedNovelChapter,
   fetchSearchedChapterList,
   fetchSearchedChapterListProcess,
+  fetchSearchedNovelChapterContent,
   fetchSearchedNovelProfile,
   fetchSearchedNovelProfileProcess,
   setSearchedChapterProfile,
@@ -54,15 +55,24 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
       setProfile(v);
     },
     onFailed(error) {
-      app.tip({ text: ["获取电视剧详情失败", error.message] });
+      app.tip({ text: ["获取详情失败", error.message] });
+    },
+  });
+
+  const chapterContentRequest = new RequestCoreV2({
+    fetch: fetchSearchedNovelChapterContent,
+    client,
+    onSuccess(v) {
+      setContent(v.content.split("\n"));
+      contentDialog.show();
+    },
+    onFailed(error) {
+      app.tip({ text: ["获取章节内容失败", error.message] });
     },
   });
   const sourceDeletingRequest = new RequestCoreV2({
     fetch: deleteSearchedNovelChapter,
     client,
-    // onLoading(loading) {
-    //   fileDeletingConfirmDialog.okBtn.setLoading(loading);
-    // },
     onSuccess() {
       // const theEpisode = episodeRef.value;
       const theSource = fileRef.value;
@@ -125,11 +135,13 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
       fetch: fetchSearchedChapterList,
       process: fetchSearchedChapterListProcess,
       client,
+    }),
+    {
       pageSize: 100,
       search: {
         novel_id: view.query.id,
       },
-    })
+    }
   );
   const curEpisode = new RefCore<SearchedChapterItem>();
   const mediaSearch = new NovelSearchCore();
@@ -207,6 +219,7 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
   // const episodeRef = new RefCore<MediaSourceItem>();
   const fileRef = new RefCore<EpisodeItemInSeason["sources"][number]>();
   // const curParsedTV = new SelectionCore<TVProfile["parsed_tvs"][number]>();
+  const contentDialog = new DialogCore({ footer: false });
   const searcher = new NovelProfileSearchCore();
   const dialog = new DialogCore({
     onOk() {
@@ -302,11 +315,10 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
     },
   });
 
-  const [profile, setProfile] = createSignal<UnpackedResult<TmpRequestResp<typeof fetchSearchedNovelProfile>> | null>(
-    null
-  );
+  const [profile, setProfile] = createSignal<UnpackedResult<TmpRequestResp<typeof fetchSearchedNovelProfile>> | null>(null);
   const [chapterResponse, setChapterResponse] = createSignal(chapterList.response);
   const [curSeason, setCurSeason] = createSignal(seasonRef.value);
+  const [content, setContent] = createSignal([]);
 
   chapterList.onStateChange((v) => {
     console.log("setChapterResponse", v.search);
@@ -393,6 +405,14 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
                         >
                           <Edit class="w-4 h-4" />
                         </div>
+                        <div
+                          class="cursor-pointer"
+                          onClick={() => {
+                            chapterContentRequest.run({ searched_chapter_id: id });
+                          }}
+                        >
+                          <Eye class="w-4 h-4" />
+                        </div>
                       </div>
                       <div class="pl-4 space-y-1">
                         <Show
@@ -431,6 +451,17 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
       </Dialog>
       <Dialog title="设置章节详情" store={dialog}>
         <div class="w-[520px]">{/* <NovelProfileSearchView store={searcher} /> */}</div>
+      </Dialog>
+      <Dialog title="" store={contentDialog}>
+        <div class="w-[520px] h-[480px] overflow-y-auto">
+          {
+            <For each={content()}>
+              {(text) => {
+                return <div>{text}</div>;
+              }}
+            </For>
+          }
+        </div>
       </Dialog>
     </>
   );

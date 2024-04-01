@@ -2,35 +2,11 @@
  * @file 电视剧列表
  */
 import { createSignal, For, Show } from "solid-js";
-import {
-  ArrowUpCircle,
-  Award,
-  BookOpen,
-  Calendar,
-  Info,
-  Package,
-  RotateCw,
-  Search,
-  Send,
-  SlidersHorizontal,
-  Smile,
-} from "lucide-solid";
+import { ArrowUpCircle, Award, BookOpen, Calendar, Info, Package, RotateCw, Search, Send, SlidersHorizontal, Smile } from "lucide-solid";
 
-import { SeasonMediaItem, fetchNovelProfileList, fetchPartialSeasonMedia } from "@/services/media";
+import { SeasonMediaItem, fetchNovelProfileList, fetchPartialSeasonMedia, refreshSearchedNovelOfNovelProfile } from "@/services/media";
 import { moveSeasonToResourceDrive, refreshSeasonProfiles, refreshSeasonProfile } from "@/services";
-import {
-  Skeleton,
-  Popover,
-  ScrollView,
-  Input,
-  Button,
-  LazyImage,
-  Dialog,
-  PurePopover,
-  BackToTop,
-  CheckboxGroup,
-  ListView,
-} from "@/components/ui";
+import { Skeleton, Popover, ScrollView, Input, Button, LazyImage, Dialog, PurePopover, BackToTop, CheckboxGroup, ListView } from "@/components/ui";
 import {
   ScrollViewCore,
   DialogCore,
@@ -74,6 +50,10 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
   );
   const partialSeasonRequest = new RequestCoreV2({
     fetch: fetchPartialSeasonMedia,
+    client,
+  });
+  const searchSourcesRequest = new RequestCoreV2({
+    fetch: refreshSearchedNovelOfNovelProfile,
     client,
   });
   const seasonRef = new RefCore<SeasonMediaItem>();
@@ -203,6 +183,14 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
       // };
       // app.showView(homeTVProfilePage);
       history.push("root.home_layout.season_profile", { id: record.id });
+    },
+  });
+  const searchInSourcesBtn = new ButtonInListCore<SeasonMediaItem>({
+    async onClick(record) {
+      const r = await searchSourcesRequest.run({ novel_id: record.id });
+      app.tip({
+        text: ["开始刷新"],
+      });
     },
   });
   const refreshSeasonProfilesRequest = new RequestCore(refreshSeasonProfiles, {
@@ -364,16 +352,7 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                 <div class="space-y-4">
                   <For each={seasonListState().dataSource}>
                     {(season) => {
-                      const {
-                        id,
-                        name,
-                        overview,
-                        cover_path: poster_path,
-                        air_date,
-                        vote_average,
-                        cur_episode_count,
-                        episode_count,
-                      } = season;
+                      const { id, name, overview, cover_path: poster_path, air_date, vote_average, cur_episode_count, episode_count } = season;
                       const url = history.buildURLWithPrefix("root.home_layout.season_profile", {
                         id,
                       });
@@ -395,9 +374,7 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                                 </h2>
                               </div>
                               <div class="mt-2 overflow-hidden text-ellipsis">
-                                <p class="text-slate-700 break-all whitespace-pre-wrap truncate line-clamp-3">
-                                  {overview}
-                                </p>
+                                <p class="text-slate-700 break-all whitespace-pre-wrap truncate line-clamp-3">{overview}</p>
                               </div>
                               <div class="flex items-center space-x-4 mt-2 break-keep overflow-hidden">
                                 <div class="flex items-center space-x-1 px-2 border border-slate-600 rounded-xl text-slate-600">
@@ -428,8 +405,7 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                                   <div
                                     class="flex items-center space-x-1 px-2 border border-red-500 rounded-xl text-red-500"
                                     onMouseEnter={(event) => {
-                                      const { x, y, width, height, left, top, right, bottom } =
-                                        event.currentTarget.getBoundingClientRect();
+                                      const { x, y, width, height, left, top, right, bottom } = event.currentTarget.getBoundingClientRect();
                                       setTips(season.tips);
                                       tipPopover.show({ x, y, width, height: height + 8, left, top, right, bottom });
                                     }}
@@ -443,17 +419,12 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                                 </Show>
                               </div>
                               <div class="space-x-2 mt-4 p-1 overflow-hidden whitespace-nowrap">
-                                <Button
-                                  store={refreshPartialBtn.bind(season)}
-                                  variant="subtle"
-                                  icon={<RotateCw class="w-4 h-4" />}
-                                ></Button>
-                                <Button
-                                  store={profileBtn.bind(season)}
-                                  variant="subtle"
-                                  icon={<BookOpen class="w-4 h-4" />}
-                                >
+                                <Button store={refreshPartialBtn.bind(season)} variant="subtle" icon={<RotateCw class="w-4 h-4" />}></Button>
+                                <Button store={profileBtn.bind(season)} variant="subtle" icon={<BookOpen class="w-4 h-4" />}>
                                   详情
+                                </Button>
+                                <Button variant="subtle" store={searchInSourcesBtn.bind(season)}>
+                                  搜索书源
                                 </Button>
                               </div>
                             </div>
