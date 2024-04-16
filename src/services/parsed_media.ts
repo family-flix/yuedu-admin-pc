@@ -18,6 +18,7 @@ export function fetchSearchedNovelList(params: FetchParams & { keyword: string }
         cover_path: string;
       };
       source: {
+        hostname: string;
         name: string;
       };
     }>
@@ -29,6 +30,29 @@ export function fetchSearchedNovelList(params: FetchParams & { keyword: string }
   });
 }
 export type SearchedNovelItem = UnpackedResult<TmpRequestResp<typeof fetchSearchedNovelList>>["list"][0];
+export function fetchSearchedNovelListProcess(r: TmpRequestResp<typeof fetchSearchedNovelList>) {
+  if (r.error) {
+    return Result.Err(r.error.message);
+  }
+  return Result.Ok({
+    ...r.data,
+    list: r.data.list.map((novel) => {
+      const { id, name, url, profile, source } = novel;
+      return {
+        id,
+        name,
+        url: (() => {
+          if (url.startsWith("http")) {
+            return url;
+          }
+          return source.hostname + url;
+        })(),
+        profile,
+        source,
+      };
+    }),
+  });
+}
 
 /**
  * 获取搜索到的小说详情、包含章节
@@ -73,10 +97,11 @@ export function fetchSearchedNovelProfileProcess(r: TmpRequestResp<typeof fetchS
     chapter: {
       ...data.chapter,
       list: data.chapter.list.map((chapter) => {
-        const { id, name, profile } = chapter;
+        const { id, name, url, profile } = chapter;
         return {
           id,
           name,
+          url,
           searched_novel: {
             name: data.name,
             source_name: data.source.name,
@@ -94,6 +119,7 @@ export function fetchSearchedChapterList(params: FetchParams & { novel_id: strin
     ListResponseWithCursor<{
       id: string;
       name: string;
+      url: string;
       searched_novel: {
         name: string;
         source_name: string;
@@ -118,10 +144,11 @@ export function fetchSearchedChapterListProcess(r: TmpRequestResp<typeof fetchSe
   return Result.Ok({
     ...r.data,
     list: r.data.list.map((tv) => {
-      const { id, name, searched_novel, profile } = tv;
+      const { id, name, url, searched_novel, profile } = tv;
       return {
         id,
         name,
+        url,
         searched_novel,
         profile,
       };

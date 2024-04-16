@@ -5,7 +5,7 @@ import { For, Show, createSignal } from "solid-js";
 import { AlertCircle, Brush, Check, CheckCircle, Edit, RotateCcw, Search, Trash } from "lucide-solid";
 
 import { ViewComponent } from "@/store/types";
-import { fetchSearchedNovelList } from "@/services/parsed_media";
+import { fetchSearchedNovelList, fetchSearchedNovelListProcess } from "@/services/parsed_media";
 import { Button, Input, LazyImage, ListView, ScrollView } from "@/components/ui";
 import { ButtonCore, ButtonInListCore, ImageCore, ImageInListCore, InputCore, ScrollViewCore } from "@/domains/ui";
 import { RequestCore } from "@/domains/request";
@@ -20,6 +20,7 @@ export const SearchedNovelListPage: ViewComponent = (props) => {
   const list = new ListCoreV2(
     new RequestCoreV2({
       fetch: fetchSearchedNovelList,
+      process: fetchSearchedNovelListProcess,
       client,
     }),
     {
@@ -118,7 +119,7 @@ export const SearchedNovelListPage: ViewComponent = (props) => {
           <div class="space-y-4">
             <For each={dataSource()}>
               {(novel) => {
-                const { id, name, profile, source } = novel;
+                const { id, name, url, profile, source } = novel;
                 return (
                   <div
                     class="flex p-4 bg-white rounded-sm"
@@ -135,16 +136,20 @@ export const SearchedNovelListPage: ViewComponent = (props) => {
                           <div class="ml-4">
                             <div class="text-lg">{profile.name}</div>
                             <div class="mt-4">{source.name}</div>
+                            <a
+                              href={url}
+                              target="_blank"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                              }}
+                            >
+                              {url}
+                            </a>
                           </div>
                         </div>
                       </div>
                       <div class="flex mt-4 space-x-2">
-                        <Button
-                          class="box-content"
-                          variant="subtle"
-                          store={profileBtn.bind(novel)}
-                          icon={<Brush class="w-4 h-4" />}
-                        >
+                        <Button class="box-content" variant="subtle" store={profileBtn.bind(novel)} icon={<Brush class="w-4 h-4" />}>
                           详情
                         </Button>
                       </div>

@@ -391,7 +391,7 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
             <div class="space-y-4 mt-8">
               <For each={chapterResponse().dataSource}>
                 {(chapter) => {
-                  const { id, name, profile } = chapter;
+                  const { id, name, url, profile } = chapter;
                   return (
                     <div title={id}>
                       <div class="flex items-center space-x-2">
@@ -399,7 +399,7 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
                         <div
                           class="cursor-pointer"
                           onClick={() => {
-                            // curEpisode.select(chapter);
+                            curEpisode.select(chapter);
                             setChapterProfileDialog.show();
                           }}
                         >
@@ -415,6 +415,9 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
                         </div>
                       </div>
                       <div class="pl-4 space-y-1">
+                        <a href={url} target="_blank">
+                          {url}
+                        </a>
                         <Show
                           when={profile}
                           fallback={
@@ -453,14 +456,14 @@ export const SearchedNovelProfilePage: ViewComponent = (props) => {
         <div class="w-[520px]">{/* <NovelProfileSearchView store={searcher} /> */}</div>
       </Dialog>
       <Dialog title="" store={contentDialog}>
-        <div class="w-[520px] h-[480px] overflow-y-auto">
-          {
+        <div class="w-[520px]">
+          <div class="h-[480px] overflow-y-auto">
             <For each={content()}>
               {(text) => {
                 return <div>{text}</div>;
               }}
             </For>
-          }
+          </div>
         </div>
       </Dialog>
     </>

@@ -326,7 +326,7 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                     <div class="rounded-md border border-slate-300 bg-white shadow-sm">
                       <div class="flex">
                         <div class="overflow-hidden mr-2 rounded-sm">
-                          <Skeleton class="w-[180px] h-[272px]" />
+                          <Skeleton class="w-[90px] h-[136px]" />
                         </div>
                         <div class="flex-1 p-4">
                           <Skeleton class="h-[36px] w-[180px]"></Skeleton>
@@ -363,7 +363,7 @@ export const HomeSeasonListPage: ViewComponent = (props) => {
                         <div class="rounded-md border border-slate-300 bg-white shadow-sm">
                           <div class="flex">
                             <div class="overflow-hidden mr-2 rounded-sm">
-                              <LazyImage class="w-[180px] h-[272px]" store={poster.bind(poster_path)} alt={name} />
+                              <LazyImage class="w-[90px] h-[136px]" store={poster.bind(poster_path)} alt={name} />
                             </div>
                             <div class="flex-1 w-0 p-4">
                               <div class="flex items-center">

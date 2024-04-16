@@ -4,23 +4,10 @@
 import { createSignal, For, Show } from "solid-js";
 import { Award, BookOpen, Calendar, Clock, Info, LocateIcon, MapPin, RotateCw, Search, Star } from "lucide-solid";
 
-import {
-  fetchNovelChapterProfileList,
-  NovelChapterProfileItem,
-  setSearchedChapterToChapterProfile,
-} from "@/services/media";
+import { fetchNovelChapterProfileList, NovelChapterProfileItem, setSearchedChapterToChapterProfile } from "@/services/media";
 import { moveMovieToResourceDrive, refreshMovieProfiles, transferMovieToAnotherDrive } from "@/services";
 import { LazyImage, Input, Button, Skeleton, ScrollView, ListView, Dialog } from "@/components/ui";
-import {
-  InputCore,
-  ButtonCore,
-  ButtonInListCore,
-  ScrollViewCore,
-  DialogCore,
-  CheckboxGroupCore,
-  PopoverCore,
-  ImageInListCore,
-} from "@/domains/ui";
+import { InputCore, ButtonCore, ButtonInListCore, ScrollViewCore, DialogCore, CheckboxGroupCore, PopoverCore, ImageInListCore } from "@/domains/ui";
 import { ListCore } from "@/domains/list";
 import { RequestCore } from "@/domains/request";
 import { RefCore } from "@/domains/cur";
@@ -32,6 +19,7 @@ import { driveList } from "@/store/drives";
 import { SearchedChapterSelect, SearchedChapterSelectCore } from "@/components/searched-chapter-select";
 import { RequestCoreV2 } from "@/domains/request/v2";
 import { ListCoreV2 } from "@/domains/list/v2";
+import { fetchSearchedChapterList, fetchSearchedNovelList } from "@/services/parsed_media";
 
 export const MovieListPage: ViewComponent = (props) => {
   const { app, client, history, view } = props;
@@ -41,7 +29,7 @@ export const MovieListPage: ViewComponent = (props) => {
   });
   const movieList = new ListCoreV2(
     new RequestCoreV2({
-      fetch: fetchNovelChapterProfileList,
+      fetch: fetchSearchedChapterList,
       client,
     }),
     {
@@ -263,25 +251,17 @@ export const MovieListPage: ViewComponent = (props) => {
               <div class="space-y-4">
                 <For each={state().dataSource}>
                   {(movie) => {
-                    const { id, name,  } = movie;
+                    const { id, name, profile } = movie;
                     // const url = history.buildURLWithPrefix("root.home_layout.movie_profile", { id });
                     return (
                       <div class="rounded-md border border-slate-300 bg-white shadow-sm">
                         <div class="flex">
-                          {/* <div class="overflow-hidden mr-2 rounded-sm">
-                            <LazyImage class="w-[86px] h-[115px]" store={poster.bind(novel.cover_path)} alt={name} />
-                          </div> */}
                           <div class="flex-1 w-0 p-4">
-                            {/* <h2 class="text-2xl text-slate-800">
-                              <a href={url} target="_blank">
-                                {novel.name}
-                              </a>
-                            </h2>
                             <div class="flex items-center space-x-4 mt-2">{name}</div>
-                            <div class="space-x-2 mt-6">{file_count}</div> */}
-                            <Button variant="subtle" store={setSearchedChapterBtn.bind(movie)}>
+                            {/* <div class="space-x-2 mt-6">{file_count}</div> */}
+                            {/* <Button variant="subtle" store={setSearchedChapterBtn.bind(movie)}>
                               关联详情
-                            </Button>
+                            </Button> */}
                           </div>
                         </div>
                       </div>

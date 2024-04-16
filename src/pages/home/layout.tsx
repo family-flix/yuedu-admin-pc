@@ -253,18 +253,18 @@ export const HomeLayout: ViewComponent = (props) => {
       // view: homeSeasonListPage,
     },
     {
-      text: "书源小说",
-      icon: <Film class="w-6 h-6" />,
-      // url: "/home/movie",
-      url: "root.home_layout.movie_list",
-      // view: homeMovieListPage,
-    },
-    {
-      text: "刮削结果",
+      text: "书源索引结果",
       icon: <Sparkles class="w-6 h-6" />,
       // url: "/home/unknown_media/season",
       url: "root.home_layout.parse_result_layout.novel",
       // view: homeUnknownTVPage,
+    },
+    {
+      text: "章节",
+      icon: <Film class="w-6 h-6" />,
+      // url: "/home/movie",
+      url: "root.home_layout.movie_list",
+      // view: homeMovieListPage,
     },
     // {
     //   text: "问题影视剧",
